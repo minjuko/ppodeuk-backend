@@ -3,8 +3,7 @@ package bdbe.bdbd.controller.user;
 import bdbe.bdbd._core.security.CustomUserDetails;
 import bdbe.bdbd.dto.pay.PayRequest;
 import bdbe.bdbd.dto.reservation.ReservationRequest;
-import bdbe.bdbd.dto.reservation.ReservationResponse;
-import bdbe.bdbd.service.pay.PayService;
+import bdbe.bdbd.service.pay.PaymentFlowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,29 +19,31 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 public class UserPayController {
 
-    private final PayService payService;
+    private final PaymentFlowService paymentFlowService;
 
     @PostMapping("/payment/ready")
     public ResponseEntity<?> requestPaymentReady(
             @Valid @RequestBody PayRequest.PaymentReadyRequest paymentReadyRequest,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             Errors errors
     ) {
         ReservationRequest.SaveDTO saveDTO = paymentReadyRequest.getSaveDTO();
-        return payService.requestPaymentReady(
+        return paymentFlowService.requestPaymentReady(
                 paymentReadyRequest.getRequestDto(),
-                saveDTO
+                saveDTO,
+                userDetails.getMember()
         );
     }
 
 
     @PostMapping("/payment/approve")
-    public ResponseEntity<ReservationResponse.findLatestOneResponseDTO> requestPaymentApproval(
+    public ResponseEntity<?> requestPaymentApproval(
             @Valid @RequestBody PayRequest.PaymentApprovalRequestDTO requestDTO,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Long bayId = requestDTO.getSaveDTO().getBayId();
 
-        return payService.requestPaymentApproval(
+        return paymentFlowService.requestPaymentApproval(
                 requestDTO.getPayApprovalRequestDTO(),
                 bayId,
                 userDetails.getMember(),

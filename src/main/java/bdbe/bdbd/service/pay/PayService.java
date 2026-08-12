@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -40,8 +41,9 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@Profile("!local")
 @RequiredArgsConstructor
-public class PayService {
+public class PayService implements PaymentFlowService {
 
     @Value("${payment.external.enabled:false}")
     private boolean externalPaymentEnabled;
@@ -66,7 +68,11 @@ public class PayService {
 
     private final BayJPARepository bayJPARepository;
 
-    public ResponseEntity<?> requestPaymentReady(PayRequest.PayReadyRequestDTO requestDto, ReservationRequest.SaveDTO saveDTO) {
+    @Override
+    public ResponseEntity<?> requestPaymentReady(
+            PayRequest.PayReadyRequestDTO requestDto,
+            ReservationRequest.SaveDTO saveDTO,
+            Member member) {
 
         requireExternalPaymentEnabled();
 
@@ -183,6 +189,7 @@ public class PayService {
     }
 
     @Transactional
+    @Override
     public ResponseEntity<ReservationResponse.findLatestOneResponseDTO> requestPaymentApproval(
             PayRequest.PayApprovalRequestDTO requestDto,
             Long bayId,

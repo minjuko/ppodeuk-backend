@@ -14,7 +14,9 @@ START TRANSACTION;
 -- Remove only this script's dependent demo rows, in FK-safe order.
 DELETE FROM review_keyword WHERE id IN (1001, 1002);
 DELETE FROM review WHERE id = 1001;
-DELETE FROM reservation WHERE id IN (1001, 1002);
+-- Also remove reservations created by local payment smoke tests for the owned
+-- demo user and demo bays. No other member or carwash data is touched.
+DELETE FROM reservation WHERE m_id = 102 AND b_id IN (1001, 1002, 1003);
 DELETE FROM carwash_keyword WHERE id IN (1001, 1002, 1003, 1004, 1005);
 DELETE FROM optime WHERE id IN (1001, 1002, 1003, 1004);
 DELETE FROM bay WHERE id IN (1001, 1002, 1003);
