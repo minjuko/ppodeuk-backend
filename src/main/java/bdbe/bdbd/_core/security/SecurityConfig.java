@@ -98,6 +98,7 @@ public class SecurityConfig {
         // 인증, 권한 필터 설정
         http.authorizeRequests(authorize -> authorize
                 .antMatchers("/api/open/**").permitAll()
+                .antMatchers("/demo-images/**").permitAll()
                 .antMatchers("/api/user/**").access("hasAnyRole('USER', 'OWNER')")
                 .antMatchers("/api/owner/**").access("hasRole('OWNER')")
                 .anyRequest().authenticated()); // 모든 다른 요청은 인증 필요
@@ -119,7 +120,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Profile("!prod")
+    @Profile("!prod & !demo")
     @Primary
     public CorsConfigurationSource devCorsConfigurationSource() {
         // 개발 환경용 CORS 설정
@@ -137,7 +138,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Profile("prod")
+    @Profile("prod | demo")
     @Primary
     public CorsConfigurationSource prodCorsConfigurationSource() {
         // 운영 환경용 CORS 설정

@@ -1,0 +1,78 @@
+server:
+  port: ${PORT:8080}
+  servlet:
+    encoding:
+      charset: utf-8
+      force: true
+
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.cloud.aws.autoconfigure.context.ContextInstanceDataAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.context.ContextCredentialsAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.context.ContextRegionProviderAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.context.ContextResourceLoaderAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.context.ContextStackAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.mail.MailSenderAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.cache.ElastiCacheAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.messaging.MessagingAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.jdbc.AmazonRdsDatabaseAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.metrics.CloudWatchExportAutoConfiguration
+  datasource:
+    url: ${DATABASE_URL}
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        default_batch_fetch_size: 100
+    open-in-view: false
+
+cloud:
+  aws:
+    credentials:
+      accessKey: ""
+      secretKey: ""
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: ""
+    proxy:
+      host: ""
+      port: 0
+    stack:
+      auto: false
+
+storage:
+  s3:
+    enabled: false
+
+kakao:
+  admin:
+    key: ""
+
+payment:
+  external:
+    enabled: false
+  approval-url: ${DEMO_USER_FRONTEND_URL:}/paymentwaiting
+  cancel-url: ${DEMO_USER_FRONTEND_URL:}/paymentfail
+  fail-url: ${DEMO_USER_FRONTEND_URL:}/paymentfail
+
+frontend:
+  localurl: ${DEMO_USER_FRONTEND_URL:}
+  prod:
+    userurl: ${DEMO_USER_FRONTEND_URL:}
+    ownerurl: ${DEMO_OWNER_FRONTEND_URL:}
+
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+
+logging:
+  level:
+    '[bdbe.bdbd]': INFO

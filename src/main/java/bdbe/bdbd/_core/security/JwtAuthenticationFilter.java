@@ -70,7 +70,8 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 
     private boolean isNonProtectedUrl(HttpServletRequest request) {
         AntPathRequestMatcher openMatcher = new AntPathRequestMatcher("/api/open/**");
-        return openMatcher.matches(request);
+        AntPathRequestMatcher demoImageMatcher = new AntPathRequestMatcher("/demo-images/**");
+        return openMatcher.matches(request) || demoImageMatcher.matches(request);
     }
 
     private void handleException(HttpServletResponse response, ApiException exception) throws IOException {
