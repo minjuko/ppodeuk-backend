@@ -15,7 +15,8 @@ START TRANSACTION;
 DELETE FROM review_keyword WHERE id BETWEEN 1001 AND 1020;
 DELETE FROM review WHERE id BETWEEN 1001 AND 1010;
 DELETE FROM reservation WHERE id BETWEEN 1001 AND 1014;
-DELETE FROM reservation WHERE id BETWEEN 2001 AND 6000;
+DELETE FROM reservation WHERE id BETWEEN 2001 AND 10000;
+DELETE FROM reservation WHERE id IN (10001, 10002);
 DELETE FROM carwash_keyword WHERE id BETWEEN 1001 AND 1015;
 DELETE FROM optime WHERE id BETWEEN 1001 AND 1010;
 DELETE FROM bay WHERE id BETWEEN 1001 AND 1013;
@@ -26,7 +27,7 @@ DELETE FROM location WHERE id BETWEEN 1001 AND 1005;
 -- manually with a different auto-generated ID. Existing FK references make
 -- the transaction fail rather than cascade-delete unrelated activity.
 DELETE FROM member WHERE email IN ('test-owner@example.com', 'test-user@example.com', 'test1@test.com');
-DELETE FROM member WHERE id IN (101, 102, 103, 104, 105);
+DELETE FROM member WHERE id BETWEEN 101 AND 202;
 DELETE FROM keyword WHERE id BETWEEN 1 AND 14;
 
 -- IDs 1-7 are REVIEW (type=2); IDs 8-14 are CARWASH (type=1).
@@ -56,18 +57,53 @@ INSERT INTO member (id, email, password, role, tel, username) VALUES
     (101, 'test-owner@example.com',
      '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW',
      'ROLE_OWNER', '010-0000-1001', '홍길동'),
-    (102, 'test-user@example.com',
-     '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW',
-     'ROLE_USER', '01012345678', '사용자1'),
-    (103, 'portfolio-user2@example.com',
-     '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW',
-     'ROLE_USER', '010-0000-1003', '사용자2'),
-    (104, 'portfolio-user3@example.com',
-     '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW',
-     'ROLE_USER', '010-0000-1004', '사용자3'),
-    (105, 'portfolio-user4@example.com',
-     '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW',
-     'ROLE_USER', '010-0000-1005', '사용자4');
+    (102, 'test-user@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1002', '사용자1'),
+    (103, 'test-user2@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1003', '사용자2'),
+    (104, 'test-user3@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1004', '사용자3'),
+    (105, 'test-user4@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1005', '사용자4'),
+    (106, 'test-user5@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1006', '사용자5'),
+    (107, 'test-user6@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1007', '사용자6'),
+    (108, 'test-user7@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1008', '사용자7'),
+    (109, 'test-user8@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1009', '사용자8'),
+    (110, 'test-user9@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1010', '사용자9'),
+    (111, 'test-user10@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1011', '사용자10'),
+    (112, 'test-user11@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1012', '사용자11'),
+    (113, 'test-user12@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1013', '사용자12'),
+    (114, 'test-user13@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1014', '사용자13'),
+    (115, 'test-user14@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1015', '사용자14'),
+    (116, 'test-user15@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1016', '사용자15'),
+    (117, 'test-user16@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1017', '사용자16'),
+    (118, 'test-user17@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1018', '사용자17'),
+    (119, 'test-user18@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1019', '사용자18'),
+    (120, 'test-user19@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1020', '사용자19'),
+    (121, 'test-user20@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1021', '사용자20'),
+    (122, 'test-user21@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1022', '사용자21'),
+    (123, 'test-user22@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1023', '사용자22'),
+    (124, 'test-user23@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1024', '사용자23'),
+    (125, 'test-user24@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1025', '사용자24'),
+    (126, 'test-user25@example.com', '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW', 'ROLE_USER', '010-0000-1026', '사용자25');
+
+DROP PROCEDURE IF EXISTS seed_extra_users;
+DELIMITER //
+CREATE PROCEDURE seed_extra_users()
+BEGIN
+    DECLARE v_user_no INT DEFAULT 26;
+    WHILE v_user_no <= 101 DO
+        INSERT INTO member (id, email, password, role, tel, username)
+        VALUES (
+            101 + v_user_no,
+            CONCAT('test-user', v_user_no, '@example.com'),
+            '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW',
+            'ROLE_USER',
+            CONCAT('010-0000-', LPAD(1000 + v_user_no, 4, '0')),
+            CONCAT('사용자', v_user_no)
+        );
+        SET v_user_no = v_user_no + 1;
+    END WHILE;
+END//
+DELIMITER ;
+CALL seed_extra_users();
+DROP PROCEDURE IF EXISTS seed_extra_users;
 
 -- Fictional locations spread across Gwangju for visibly distinct map markers.
 INSERT INTO location (id, address, latitude, longitude) VALUES
@@ -219,18 +255,27 @@ BEGIN
     DECLARE v_bay_id INT;
     DECLARE v_member_id INT;
     DECLARE v_price INT;
+    DECLARE v_bookings INT;
+    DECLARE v_duration_minutes INT;
 
     WHILE v_month <= 10 DO
         SET v_carwash = 1001;
         WHILE v_carwash <= 1005 DO
             SET v_day = 1;
-            WHILE v_day <= 20 DO
+            WHILE v_day <= 28 DO
+                SET v_bookings = CASE v_carwash
+                    WHEN 1001 THEN CASE MOD(v_day, 5) WHEN 0 THEN 5 WHEN 1 THEN 4 WHEN 2 THEN 3 ELSE 4 END
+                    WHEN 1002 THEN CASE MOD(v_day, 4) WHEN 0 THEN 4 ELSE 3 END
+                    WHEN 1003 THEN CASE MOD(v_day, 4) WHEN 0 THEN 3 WHEN 1 THEN 4 WHEN 2 THEN 2 ELSE 3 END
+                    WHEN 1004 THEN CASE MOD(v_day, 3) WHEN 0 THEN 5 WHEN 1 THEN 3 ELSE 4 END
+                    ELSE CASE MOD(v_day, 4) WHEN 0 THEN 2 WHEN 1 THEN 3 WHEN 2 THEN 4 ELSE 3 END
+                END;
                 SET v_slot = 0;
-                WHILE v_slot < 4 DO
+                WHILE v_slot < v_bookings DO
                     SET v_reservation_id = 2000
-                        + ((v_month - 1) * 400)
-                        + ((v_carwash - 1001) * 80)
-                        + ((v_day - 1) * 4)
+                        + ((v_month - 1) * 700)
+                        + ((v_day - 1) * 25)
+                        + ((v_carwash - 1001) * 5)
                         + v_slot + 1;
                     SET v_reservation_date = DATE_ADD(
                         DATE_ADD('2026-01-01', INTERVAL (v_month - 1) MONTH),
@@ -238,7 +283,7 @@ BEGIN
                     );
                     SET v_start_time = TIMESTAMP(
                         v_reservation_date,
-                        MAKETIME(9 + (v_slot * 2), IF(MOD(v_slot, 2) = 0, 0, 30), 0)
+                        MAKETIME(8 + (v_slot * 2) + MOD(v_carwash, 2), IF(MOD(v_slot, 2) = 0, 0, 30), 0)
                     );
                     SET v_bay_id = CASE v_carwash
                         WHEN 1001 THEN 1001 + MOD(v_slot, 3)
@@ -247,20 +292,23 @@ BEGIN
                         WHEN 1004 THEN 1009 + MOD(v_slot, 2)
                         ELSE 1011 + MOD(v_slot, 3)
                     END;
-                    SET v_member_id = 102 + MOD(v_day + v_slot, 4);
+                    SET v_member_id = 108 + MOD(
+                        ((v_month - 1) * 20) + ((v_day - 1) * 20)
+                        + ((v_carwash - 1001) * 5) + v_slot, 95);
                     SET v_price = CASE v_carwash
                         WHEN 1001 THEN 12000
                         WHEN 1002 THEN 11000
                         WHEN 1003 THEN 14000
                         WHEN 1004 THEN 15000
                         ELSE 16000
-                    END;
+                    END + (v_month * 250) + (MOD(v_day, 3) * 500);
+                    SET v_duration_minutes = IF(MOD(v_day + v_slot + v_carwash, 3) = 0, 120, 60);
 
                     INSERT INTO reservation
                         (id, price, start_time, end_time, is_deleted, created_at, updated_at, b_id, m_id)
                     VALUES
                         (v_reservation_id, v_price, v_start_time,
-                         DATE_ADD(v_start_time, INTERVAL 60 MINUTE), b'0',
+                         DATE_ADD(v_start_time, INTERVAL v_duration_minutes MINUTE), b'0',
                          IF(v_reservation_date < CURDATE(),
                             TIMESTAMP(v_reservation_date, '08:00:00'), NOW(6)),
                          IF(v_reservation_date < CURDATE(),
@@ -278,6 +326,17 @@ END//
 DELIMITER ;
 CALL seed_calendar_reservations();
 DROP PROCEDURE IF EXISTS seed_calendar_reservations;
+
+-- User 1 is the screen-capture account: one active reservation now and one
+-- upcoming reservation two weeks later, with no other future reservations.
+INSERT INTO reservation
+    (id, price, start_time, end_time, is_deleted, created_at, updated_at, b_id, m_id)
+VALUES
+    (10001, 12000, DATE_SUB(NOW(6), INTERVAL 30 MINUTE), DATE_ADD(NOW(6), INTERVAL 30 MINUTE),
+     b'0', DATE_SUB(NOW(6), INTERVAL 2 DAY), DATE_SUB(NOW(6), INTERVAL 2 DAY), 1003, 102),
+    (10002, 14000, TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '18:00:00'),
+     TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '20:00:00'),
+     b'0', NOW(6), NOW(6), 1002, 102);
 
 -- Every review references a completed reservation whose end_time is before
 -- CURDATE(). The review carwash/member also matches the linked reservation.
