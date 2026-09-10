@@ -50,7 +50,7 @@ public class ReservationService {
         Carwash carwash = findCarwashById(carwashId);
         Optime optime = findOptime(carwash, dto.getStartTime());
 
-        validateReservationTime(dto.getStartTime(), dto.getEndTime(), optime, bayId);
+        validateReservationTime(dto.getStartTime(), dto.getEndTime(), optime, bayId, sessionMember);
 
         Bay bay = findBayById(bayId);
         Reservation reservation = dto.toReservationEntity(carwash, bay, sessionMember);
@@ -87,7 +87,7 @@ public class ReservationService {
         LocalDateTime endTime = dto.getEndTime();
         Optime optime = findOptime(carwash, startTime);
 
-        validateReservationTime(startTime, endTime, optime, bayId);
+        validateReservationTime(startTime, endTime, optime, bayId, member, reservationId);
 
         reservation.updateReservation(dto.getStartTime(), dto.getEndTime(), carwash);
     }
@@ -134,6 +134,25 @@ public class ReservationService {
     }
 
     public void validateReservationTime(LocalDateTime startTime, LocalDateTime endTime, Optime optime, Long bayId) {
+        validateReservationTime(startTime, endTime, optime, bayId, null, null);
+    }
+
+    public void validateReservationTime(
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            Optime optime,
+            Long bayId,
+            Member member) {
+        validateReservationTime(startTime, endTime, optime, bayId, member, null);
+    }
+
+    public void validateReservationTime(
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            Optime optime,
+            Long bayId,
+            Member member,
+            Long excludedReservationId) {
         LocalTime opStartTime = optime.getStartTime();
         LocalTime opEndTime = optime.getEndTime();
         LocalTime requestStartTimePart = startTime.toLocalTime();
@@ -179,9 +198,13 @@ public class ReservationService {
             );
         }
 
-        List<Reservation> reservationList = reservationJPARepository.findByBay_IdAndIsDeletedFalse(bayId);
+        List<Reservation> reservationList = member == null
+                ? reservationJPARepository.findByBay_IdAndIsDeletedFalse(bayId)
+                : reservationJPARepository.findByMemberIdAndIsDeletedFalse(member.getId());
 
-            boolean isOverlapping = reservationList.stream()
+        boolean isOverlapping = reservationList.stream()
+        .filter(existingReservation -> excludedReservationId == null
+                || !excludedReservationId.equals(existingReservation.getId()))
         .anyMatch(existingReservation -> {
             LocalDateTime existingStartTime = existingReservation.getStartTime();
             LocalDateTime existingEndTime = existingReservation.getEndTime();
@@ -329,6 +352,13 @@ public class ReservationService {
     }
 
     public ReservationResponse.PayAmountDTO findPayAmount(ReservationRequest.ReservationTimeDTO dto, Long bayId) {
+        return findPayAmount(dto, bayId, null);
+    }
+
+    public ReservationResponse.PayAmountDTO findPayAmount(
+            ReservationRequest.ReservationTimeDTO dto,
+            Long bayId,
+            Member member) {
         Bay bay = bayJPARepository.findById(bayId)
                 .orElseThrow(() -> new NotFoundError(
                         NotFoundError.ErrorCode.RESOURCE_NOT_FOUND,
@@ -346,7 +376,7 @@ public class ReservationService {
         LocalDateTime endTime = dto.getEndTime();
         Optime optime = findOptime(carwash, startTime);
 
-        validateReservationTime(startTime, endTime, optime, bayId);
+        validateReservationTime(startTime, endTime, optime, bayId, member);
 
         int perPrice = carwash.getPrice();
         int minutesDifference = (int) ChronoUnit.MINUTES.between(startTime, endTime); //시간 차 계산

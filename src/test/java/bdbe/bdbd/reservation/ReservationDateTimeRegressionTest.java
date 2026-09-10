@@ -8,6 +8,7 @@ import bdbe.bdbd.model.bay.Bay;
 import bdbe.bdbd.model.carwash.Carwash;
 import bdbe.bdbd.model.optime.Optime;
 import bdbe.bdbd.model.reservation.Reservation;
+import bdbe.bdbd.model.member.Member;
 import bdbe.bdbd.repository.bay.BayJPARepository;
 import bdbe.bdbd.repository.carwash.CarwashJPARepository;
 import bdbe.bdbd.repository.file.FileJPARepository;
@@ -128,6 +129,29 @@ class ReservationDateTimeRegressionTest {
                 LocalDateTime.of(2026, 8, 12, 11, 30),
                 daytimeOptime(),
                 BAY_ID);
+    }
+
+    @Test
+    void rejectsOverlappingReservationAtAnotherCarwashForSameMember() {
+        Member member = Member.builder().id(99L).build();
+        Reservation existing = Reservation.builder()
+                .id(10L)
+                .member(member)
+                .startTime(LocalDateTime.of(2026, 8, 12, 10, 0))
+                .endTime(LocalDateTime.of(2026, 8, 12, 12, 0))
+                .build();
+        given(reservationRepository.findByMemberIdAndIsDeletedFalse(member.getId()))
+                .willReturn(Collections.singletonList(existing));
+
+        assertThatThrownBy(() -> reservationService.validateReservationTime(
+                LocalDateTime.of(2026, 8, 12, 11, 0),
+                LocalDateTime.of(2026, 8, 12, 12, 30),
+                daytimeOptime(),
+                2L,
+                member))
+                .isInstanceOf(BadRequestError.class)
+                .satisfies(error -> assertThat(((BadRequestError) error).getErrors())
+                        .containsEntry("Reservation time", "Reservation time overlaps with an existing reservation."));
     }
 
     private ReservationRequest.ReservationTimeDTO timeRequest(String start, String end) {

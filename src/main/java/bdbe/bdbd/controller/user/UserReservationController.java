@@ -26,9 +26,11 @@ public class UserReservationController {
     @PostMapping("/carwashes/{bay-id}/payment")
     public ResponseEntity<?> findPayAmount(
             @PathVariable("bay-id") Long bayId,
-            @Valid @RequestBody ReservationRequest.ReservationTimeDTO dto
+            @Valid @RequestBody ReservationRequest.ReservationTimeDTO dto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        ReservationResponse.PayAmountDTO responseDTO = reservationService.findPayAmount(dto, bayId);
+        ReservationResponse.PayAmountDTO responseDTO =
+                reservationService.findPayAmount(dto, bayId, userDetails.getMember());
 
         return ResponseEntity.ok(ApiUtils.success(responseDTO));
     }

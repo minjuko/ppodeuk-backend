@@ -94,7 +94,7 @@ public class PayService implements PaymentFlowService {
         LocalDateTime endTime = saveDTO.getEndTime();
         Optime optime = reservationService.findOptime(carwash, startTime);
 
-        reservationService.validateReservationTime(startTime, endTime, optime, bayId);
+        reservationService.validateReservationTime(startTime, endTime, optime, bayId, member);
 
         int perPrice = carwash.getPrice();
         int minutesDifference = (int) ChronoUnit.MINUTES.between(startTime, endTime);
@@ -214,7 +214,7 @@ public class PayService implements PaymentFlowService {
         LocalDateTime endTime = saveDTO.getEndTime();
         Optime optime = reservationService.findOptime(carwash, startTime);
 
-        reservationService.validateReservationTime(startTime, endTime, optime, bayId);
+        reservationService.validateReservationTime(startTime, endTime, optime, bayId, member);
 
         // API 요청 보내기
         HttpHeaders headers = new HttpHeaders();

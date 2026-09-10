@@ -94,7 +94,7 @@ public class LocalPaymentService implements PaymentFlowService {
         Bay bay = findBay(saveDTO.getBayId());
         findCarwash(bay.getCarwash().getId());
         ReservationResponse.PayAmountDTO amount = reservationService.findPayAmount(
-                toReservationTime(saveDTO), saveDTO.getBayId());
+                toReservationTime(saveDTO), saveDTO.getBayId(), member);
 
         if (requestDto.getTotal_amount() == null || amount.getPrice() != requestDto.getTotal_amount()) {
             throw invalid("pay", "Invalid pay amount");
