@@ -331,7 +331,9 @@ public class CarwashService {
         List<Long> keywordsToDelete = existingKeywordIds.stream()
                 .filter(id -> !newKeywordIds.contains(id))
                 .collect(Collectors.toList());
-        carwashKeywordJPARepository.deleteByCarwashIdAndKeywordIds(carwashId, keywordsToDelete);
+        if (!keywordsToDelete.isEmpty()) {
+            carwashKeywordJPARepository.deleteByCarwashIdAndKeywordIds(carwashId, keywordsToDelete);
+        }
 
         List<Long> keywordsToAdd = newKeywordIds.stream()
                 .filter(id -> !existingKeywordIds.contains(id))
