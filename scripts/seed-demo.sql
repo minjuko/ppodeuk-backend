@@ -15,6 +15,7 @@ START TRANSACTION;
 DELETE FROM review_keyword WHERE id BETWEEN 1001 AND 1020;
 DELETE FROM review WHERE id BETWEEN 1001 AND 1010;
 DELETE FROM reservation WHERE id BETWEEN 1001 AND 1014;
+DELETE FROM reservation WHERE id BETWEEN 2001 AND 6000;
 DELETE FROM carwash_keyword WHERE id BETWEEN 1001 AND 1015;
 DELETE FROM optime WHERE id BETWEEN 1001 AND 1010;
 DELETE FROM bay WHERE id BETWEEN 1001 AND 1013;
@@ -54,19 +55,19 @@ INSERT INTO keyword (id, name, type) VALUES
 INSERT INTO member (id, email, password, role, tel, username) VALUES
     (101, 'test-owner@example.com',
      '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW',
-     'ROLE_OWNER', '010-0000-1001', '포트폴리오 점주'),
+     'ROLE_OWNER', '010-0000-1001', '홍길동'),
     (102, 'test-user@example.com',
      '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW',
-     'ROLE_USER', '01012345678', 'test1'),
+     'ROLE_USER', '01012345678', '사용자1'),
     (103, 'portfolio-user2@example.com',
      '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW',
-     'ROLE_USER', '010-0000-1003', 'user1'),
+     'ROLE_USER', '010-0000-1003', '사용자2'),
     (104, 'portfolio-user3@example.com',
      '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW',
-     'ROLE_USER', '010-0000-1004', 'user2'),
+     'ROLE_USER', '010-0000-1004', '사용자3'),
     (105, 'portfolio-user4@example.com',
      '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW',
-     'ROLE_USER', '010-0000-1005', 'user3');
+     'ROLE_USER', '010-0000-1005', '사용자4');
 
 -- Fictional locations spread across Gwangju for visibly distinct map markers.
 INSERT INTO location (id, address, latitude, longitude) VALUES
@@ -78,16 +79,16 @@ INSERT INTO location (id, address, latitude, longitude) VALUES
 
 -- All names are fictional and intended only for a portfolio demonstration.
 INSERT INTO carwash (id, name, rate, tel, des, price, l_id, m_id) VALUES
-    (1001, '빛고을 첨단세차장', 4.5, '062-000-1001',
-     '넓은 베이와 편안한 대기 공간을 갖춘 첨단지구 가상 세차장입니다.', 6000, 1001, 101),
-    (1002, '수완 하늘빛 세차소', 4.5, '062-000-1002',
+    (1001, '맑은결 워시', 4.5, '062-000-1001',
+     '넓은 베이와 편안한 대기 공간을 갖춘 가상 세차장입니다.', 6000, 1001, 101),
+    (1002, '클린웨이브', 4.5, '062-000-1002',
      '아침 시간부터 이용할 수 있는 주거지 근처의 가상 세차 공간입니다.', 5500, 1002, 101),
-    (1003, '상무 워터가든', 4.5, '062-000-1003',
+    (1003, '라이트 버블', 4.5, '062-000-1003',
      '점심과 퇴근 시간대에 여유롭게 이용하는 도심형 가상 세차장입니다.', 7000, 1003, 101),
-    (1004, '봉선 느티나무 세차장', 4.25, '062-000-1004',
+    (1004, '화이트 폼', 4.25, '062-000-1004',
      '늦은 저녁까지 운영하여 일과 후 방문하기 좋은 가상 세차장입니다.', 7500, 1004, 101),
-    (1005, '무등산 맑은물 세차터', 4.5, '062-000-1005',
-     '무등산 진입로 근처에서 주말에도 여유롭게 이용하는 가상 세차터입니다.', 8000, 1005, 101);
+    (1005, '프레시 드라이브', 4.5, '062-000-1005',
+     '주말에도 여유롭게 이용할 수 있는 가상 세차터입니다.', 8000, 1005, 101);
 
 -- Local-only static images served by Spring Boot for the portfolio demo.
 INSERT INTO file (id, name, url, uploaded_at, is_deleted, c_id) VALUES
@@ -200,6 +201,83 @@ VALUES
      TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 2 DAY), '11:00:00'),
      TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 2 DAY), '12:00:00'),
      b'0', DATE_SUB(NOW(6), INTERVAL 2 DAY), DATE_SUB(NOW(6), INTERVAL 2 DAY), 1012, 104);
+
+-- Add 80 reservations per carwash for each month of 2026-01 through 2026-09.
+-- October is also populated so the owner calendar has next-month data.
+-- Four time slots across twenty days create varied bay schedules.
+DROP PROCEDURE IF EXISTS seed_calendar_reservations;
+DELIMITER //
+CREATE PROCEDURE seed_calendar_reservations()
+BEGIN
+    DECLARE v_month INT DEFAULT 1;
+    DECLARE v_carwash INT;
+    DECLARE v_day INT;
+    DECLARE v_slot INT;
+    DECLARE v_reservation_id INT;
+    DECLARE v_reservation_date DATE;
+    DECLARE v_start_time DATETIME;
+    DECLARE v_bay_id INT;
+    DECLARE v_member_id INT;
+    DECLARE v_price INT;
+
+    WHILE v_month <= 10 DO
+        SET v_carwash = 1001;
+        WHILE v_carwash <= 1005 DO
+            SET v_day = 1;
+            WHILE v_day <= 20 DO
+                SET v_slot = 0;
+                WHILE v_slot < 4 DO
+                    SET v_reservation_id = 2000
+                        + ((v_month - 1) * 400)
+                        + ((v_carwash - 1001) * 80)
+                        + ((v_day - 1) * 4)
+                        + v_slot + 1;
+                    SET v_reservation_date = DATE_ADD(
+                        DATE_ADD('2026-01-01', INTERVAL (v_month - 1) MONTH),
+                        INTERVAL (v_day - 1) DAY
+                    );
+                    SET v_start_time = TIMESTAMP(
+                        v_reservation_date,
+                        MAKETIME(9 + (v_slot * 2), IF(MOD(v_slot, 2) = 0, 0, 30), 0)
+                    );
+                    SET v_bay_id = CASE v_carwash
+                        WHEN 1001 THEN 1001 + MOD(v_slot, 3)
+                        WHEN 1002 THEN 1004 + MOD(v_slot, 2)
+                        WHEN 1003 THEN 1006 + MOD(v_slot, 3)
+                        WHEN 1004 THEN 1009 + MOD(v_slot, 2)
+                        ELSE 1011 + MOD(v_slot, 3)
+                    END;
+                    SET v_member_id = 102 + MOD(v_day + v_slot, 4);
+                    SET v_price = CASE v_carwash
+                        WHEN 1001 THEN 12000
+                        WHEN 1002 THEN 11000
+                        WHEN 1003 THEN 14000
+                        WHEN 1004 THEN 15000
+                        ELSE 16000
+                    END;
+
+                    INSERT INTO reservation
+                        (id, price, start_time, end_time, is_deleted, created_at, updated_at, b_id, m_id)
+                    VALUES
+                        (v_reservation_id, v_price, v_start_time,
+                         DATE_ADD(v_start_time, INTERVAL 60 MINUTE), b'0',
+                         IF(v_reservation_date < CURDATE(),
+                            TIMESTAMP(v_reservation_date, '08:00:00'), NOW(6)),
+                         IF(v_reservation_date < CURDATE(),
+                            TIMESTAMP(v_reservation_date, '08:00:00'), NOW(6)),
+                         v_bay_id, v_member_id);
+                    SET v_slot = v_slot + 1;
+                END WHILE;
+                SET v_day = v_day + 1;
+            END WHILE;
+            SET v_carwash = v_carwash + 1;
+        END WHILE;
+        SET v_month = v_month + 1;
+    END WHILE;
+END//
+DELIMITER ;
+CALL seed_calendar_reservations();
+DROP PROCEDURE IF EXISTS seed_calendar_reservations;
 
 -- Every review references a completed reservation whose end_time is before
 -- CURDATE(). The review carwash/member also matches the linked reservation.
