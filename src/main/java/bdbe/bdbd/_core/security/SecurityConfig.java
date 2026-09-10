@@ -99,6 +99,7 @@ public class SecurityConfig {
         http.authorizeRequests(authorize -> authorize
                 .antMatchers("/api/open/**").permitAll()
                 .antMatchers("/demo-images/**").permitAll()
+                .antMatchers("/uploads/**").permitAll()
                 .antMatchers("/api/user/**").access("hasAnyRole('USER', 'OWNER')")
                 .antMatchers("/api/owner/**").access("hasRole('OWNER')")
                 .anyRequest().authenticated()); // 모든 다른 요청은 인증 필요

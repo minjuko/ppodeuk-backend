@@ -14,6 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 /**
@@ -26,6 +30,8 @@ public class FileUploadUtil {
     private final AmazonS3 s3Client;
     private final String bucketName;
     private final boolean s3Enabled;
+    private final Path localDirectory;
+    private final String localBaseUrl;
     static final List<String> ALLOWED_EXTENSIONS = Arrays.asList(".jpg", ".jpeg", ".png");
 
     public FileUploadUtil(
@@ -35,10 +41,14 @@ public class FileUploadUtil {
             @Value("${cloud.aws.region.static}") String region,
             @Value("${cloud.aws.proxy.host}") String proxyHost,
             @Value("${cloud.aws.proxy.port}") int proxyPort,
-            @Value("${cloud.aws.s3.bucket}") String bucketName) {
+            @Value("${cloud.aws.s3.bucket}") String bucketName,
+            @Value("${storage.local.directory:./uploads}") String localDirectory,
+            @Value("${storage.local.base-url:/uploads}") String localBaseUrl) {
 
         this.s3Enabled = s3Enabled;
         this.bucketName = bucketName;
+        this.localDirectory = Paths.get(localDirectory).toAbsolutePath().normalize();
+        this.localBaseUrl = localBaseUrl.replaceAll("/+$", "");
 
         if (!s3Enabled) {
             this.s3Client = null;
@@ -84,19 +94,24 @@ public class FileUploadUtil {
     }
 
     public String uploadFile(MultipartFile file) throws IOException {
-        if (!s3Enabled) {
-            throw new InternalServerError(
-                    InternalServerError.ErrorCode.INTERNAL_SERVER_ERROR,
-                    Collections.singletonMap("File", "File upload is unavailable in the local profile."));
-        }
-
         validateFiles(new MultipartFile[]{file}); // This will throw BadRequestError if validation fails
 
         String originalFilename = file.getOriginalFilename();
-        String mimeType = file.getContentType();
         String extension = originalFilename.substring(originalFilename.lastIndexOf('.')).toLowerCase();
-
         String uniqueFilename = UUID.randomUUID().toString() + extension;
+
+        if (!s3Enabled) {
+            Files.createDirectories(localDirectory);
+            Path destination = localDirectory.resolve(uniqueFilename).normalize();
+            if (!destination.getParent().equals(localDirectory)) {
+                throw new IOException("Invalid local upload path.");
+            }
+            Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
+
+            return localBaseUrl + "/" + uniqueFilename;
+        }
+
+        String mimeType = file.getContentType();
         String keyName = "uploads/" + uniqueFilename;
 
         ObjectMetadata metadata = new ObjectMetadata();

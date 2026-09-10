@@ -47,6 +47,9 @@ cloud:
 storage:
   s3:
     enabled: false
+  local:
+    directory: ${LOCAL_FILE_DIRECTORY:./uploads}
+    base-url: ${LOCAL_FILE_BASE_URL:http://localhost:8080/uploads}
 
 kakao:
   admin:
