@@ -189,6 +189,8 @@ public class CarwashResponse {
         public detailLocationDTO toLocationDTO(Location location) {
             detailLocationDTO detailLocationDTO = new detailLocationDTO();
             detailLocationDTO.setAddress(location.getAddress());
+            detailLocationDTO.setLatitude(location.getLatitude());
+            detailLocationDTO.setLongitude(location.getLongitude());
 
             return detailLocationDTO;
         }
@@ -212,6 +214,8 @@ public class CarwashResponse {
     @Setter
     public static class detailLocationDTO {
         private String address;
+        private double latitude;
+        private double longitude;
     }
 
     @Getter

@@ -85,15 +85,17 @@ public class OwnerCarwashController {
     public ResponseEntity<?> updateCarwashDetails(
             @PathVariable("carwash-id") Long carwashId,
             @Valid @RequestPart("updateData") CarwashRequest.updateCarwashDetailsDTO updatedto,
-            @RequestPart(value = "imageFileList") MultipartFile[] imageFileList,
+            @RequestPart(value = "imageFileList", required = false) MultipartFile[] imageFileList,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        for (MultipartFile file : imageFileList) {
-            if (file.isEmpty()) {
-                throw new BadRequestError(
-                        BadRequestError.ErrorCode.MISSING_PART,
-                        Collections.singletonMap("images", "Empty image file is not allowed")
-                );
+        if (imageFileList != null) {
+            for (MultipartFile file : imageFileList) {
+                if (file.isEmpty()) {
+                    throw new BadRequestError(
+                            BadRequestError.ErrorCode.MISSING_PART,
+                            Collections.singletonMap("images", "Empty image file is not allowed")
+                    );
+                }
             }
         }
         CarwashResponse.updateCarwashDetailsResponseDTO updateCarwashDetailsDTO =
