@@ -24,6 +24,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Collections;
+import java.util.Arrays;
 
 
 @Configuration
@@ -31,6 +32,9 @@ public class SecurityConfig {
 
     @Value("${frontend.localurl}")
     private String frontlocalurl;
+
+    @Value("${frontend.localurls:${frontend.localurl}}")
+    private String frontlocalurls;
 
     @Value("${frontend.prod.userurl}")
     private String prodfrontuserurl;
@@ -128,7 +132,10 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
-        configuration.addAllowedOrigin(frontlocalurl);
+        Arrays.stream(frontlocalurls.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .forEach(configuration::addAllowedOrigin);
         configuration.setAllowCredentials(true);
         configuration.addExposedHeader("Authorization");
 
