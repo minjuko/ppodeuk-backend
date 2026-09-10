@@ -26,7 +26,7 @@ DELETE FROM location WHERE id BETWEEN 1001 AND 1005;
 -- The explicitly named local demo login is also reclaimed if it was created
 -- manually with a different auto-generated ID. Existing FK references make
 -- the transaction fail rather than cascade-delete unrelated activity.
-DELETE FROM member WHERE email = 'test1@test.com';
+DELETE FROM member WHERE email IN ('test-owner@example.com', 'test-user@example.com', 'test1@test.com');
 DELETE FROM member WHERE id IN (101, 102, 103, 104, 105);
 DELETE FROM keyword WHERE id BETWEEN 1 AND 14;
 
@@ -50,13 +50,14 @@ INSERT INTO keyword (id, name, type) VALUES
 
 -- Passwords use Spring Security's DelegatingPasswordEncoder BCrypt format.
 -- Existing portfolio credentials are intentionally preserved:
---   USER: test1@test.com / test1234!
+--   OWNER: test-owner@example.com / test1234!
+--   USER: test-user@example.com / test1234!
 -- Never reuse these public demo credentials outside an isolated demo DB.
 INSERT INTO member (id, email, password, role, tel, username) VALUES
-    (101, 'portfolio-owner@example.com',
-     '{bcrypt}$2a$10$y7/woZaew9KVDgL2LCJ7UOsJkflCBMMmju8XAeL4TzKJrKP9/upT6',
+    (101, 'test-owner@example.com',
+     '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW',
      'ROLE_OWNER', '010-0000-1001', '포트폴리오 점주'),
-    (102, 'test1@test.com',
+    (102, 'test-user@example.com',
      '{bcrypt}$2a$10$zr.GEsRl57PlYdh0eyKSUedpnKhTLNwkLrSfCyCaS89OEm2qAodsW',
      'ROLE_USER', '01012345678', 'test1'),
     (103, 'portfolio-user2@example.com',
