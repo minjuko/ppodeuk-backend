@@ -175,7 +175,7 @@ public class OwnerRestControllerTest {
         //when
         ResultActions resultActions = mvc.perform(
                 get("/api/owner/revenue")
-                        .param("carwash-id",  "2")
+                        .param("carwash-ids",  "2")
                         .param("selected-date", "2023-10-01")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
         );

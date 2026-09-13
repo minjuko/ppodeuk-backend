@@ -54,6 +54,7 @@ public class PayRestControllerTest {
         requestDto.setTotal_amount(20000);
 
         ReservationRequest.SaveDTO saveDTO = new ReservationRequest.SaveDTO();
+        saveDTO.setBayId(1L);
         saveDTO.setStartTime(LocalDateTime.parse("2024-11-01T14:00:00"));
         saveDTO.setEndTime(LocalDateTime.parse("2024-11-01T15:00:00"));
 
@@ -64,7 +65,7 @@ public class PayRestControllerTest {
         String jsonRequestBody = om.writeValueAsString(requestBodyMap);
 
         ResultActions resultActions = mvc.perform(
-                post("/api/user/payment/ready/{bay-id}", 1)
+                post("/api/user/payment/ready")
                         .content(jsonRequestBody)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
         );
@@ -89,6 +90,7 @@ public class PayRestControllerTest {
         requestDto.setTotal_amount(9999);
 
         ReservationRequest.SaveDTO saveDTO = new ReservationRequest.SaveDTO();
+        saveDTO.setBayId(1L);
         saveDTO.setStartTime(LocalDateTime.parse("2024-11-01T14:00:00"));
         saveDTO.setEndTime(LocalDateTime.parse("2024-11-01T15:00:00"));
 
@@ -99,7 +101,7 @@ public class PayRestControllerTest {
         String jsonRequestBody = om.writeValueAsString(requestBodyMap);
 
         ResultActions resultActions = mvc.perform(
-                post("/api/user/payment/ready/{bay-id}", 1)
+                post("/api/user/payment/ready")
                         .content(jsonRequestBody)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
         );

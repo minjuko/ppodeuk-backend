@@ -28,6 +28,7 @@ spring:
   sql:
     init:
       mode: always
+      data-locations: classpath:sql/test-fixture.sql
 
 cloud:
   aws:

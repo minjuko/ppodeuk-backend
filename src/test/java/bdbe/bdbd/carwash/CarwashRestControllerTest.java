@@ -199,7 +199,7 @@ public class CarwashRestControllerTest {
         // when
         ResultActions resultActions = mvc.perform(
                 get("/api/open/carwashes/search")
-                        .param("keywordIds", keywordId)
+                        .param("keywordIdList", keywordId)
                         .param("latitude", testLatitude)
                         .param("longitude", testLongitude)
         );
@@ -289,7 +289,7 @@ public class CarwashRestControllerTest {
         optimeDTO.setWeekend(weekend);
         updateCarwashDetailsDTO.setOptime(optimeDTO);
 
-        updateCarwashDetailsDTO.setKeywordIdList(Arrays.asList(1L));
+        updateCarwashDetailsDTO.setKeywordIdList(Arrays.asList(8L));
 
         MockMultipartFile image1 = new MockMultipartFile("images", "image1.jpg", "image/jpeg", "image1 content".getBytes());
         MockMultipartFile image2 = new MockMultipartFile("images", "image2.jpg", "image/jpeg", "image2 content".getBytes());
