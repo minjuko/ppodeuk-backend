@@ -50,13 +50,6 @@
 | 기획 발표자료 | [기획 발표자료](https://www.notion.so/Weekly-ee58410d9e9f4bed871e4e4aaf7cb214?pvs=4#e326c2de2b274962bcfa04df830d7fbd)                                                                                                          |
 | 와이어 프레임 | [와이어 프레임](https://www.figma.com/file/raidVFqnBM3KgJY4KFCoB1/%EB%BD%80%EB%93%9D%EB%BD%80%EB%93%9D-%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84?type=design&node-id=478%3A3616&mode=design&t=tW0gdxACISuQbhdX-1) |
 
-### 배포 주소
-
-| 서비스          | 링크                                                            |
-| --------------- | --------------------------------------------------------------- |
-| 뽀득뽀득 사용자 | [사용자 페이지](https://k923062c3c512a.user-app.krampoline.com) |
-| 뽀득뽀득 관리자 | [관리자 페이지](https://kae2e326be433a.user-app.krampoline.com) |
-
 ## API문서
 
 | 권한                     | 기능              | 설명                          |
