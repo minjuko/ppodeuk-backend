@@ -41,7 +41,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
-@Profile("!local")
+@Profile("prod")
 @RequiredArgsConstructor
 public class PayService implements PaymentFlowService {
 
@@ -130,7 +130,7 @@ public class PayService implements PaymentFlowService {
         parameters.add("approval_url", approval_url);
         parameters.add("cancel_url", cancel_url);
         parameters.add("fail_url", fail_url);
-        log.info("Parameters: " + parameters.toString());
+        log.info("Requesting KakaoPay ready state for bayId={}", bayId);
 
         String url = "https://kapi.kakao.com/v1/payment/ready";
 
@@ -238,7 +238,7 @@ public class PayService implements PaymentFlowService {
         if (paymentApprovalResponse.getStatusCode().is2xxSuccessful()) {
             reservation = reservationService.save(saveDTO, carwash.getId(), bayId, member);  // 변수 이름 변경
         } else {
-            log.error("Payment approval failed: " + paymentApprovalResponse.getBody());
+            log.error("KakaoPay approval failed with status={}", paymentApprovalResponse.getStatusCodeValue());
             throw new BadRequestError(
                     BadRequestError.ErrorCode.VALIDATION_FAILED,
                     Collections.singletonMap("PayResponse", "Payment approval failed")

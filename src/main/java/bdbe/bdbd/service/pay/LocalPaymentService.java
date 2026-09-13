@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-@Profile("local")
+@Profile({"local", "demo", "test"})
 public class LocalPaymentService implements PaymentFlowService {
 
     private static final Duration PENDING_TTL = Duration.ofMinutes(5);

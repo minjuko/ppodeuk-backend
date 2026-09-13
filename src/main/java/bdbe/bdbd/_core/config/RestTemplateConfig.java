@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.util.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -23,8 +24,10 @@ public class RestTemplateConfig {
     @Profile("prod")
     public RestTemplate restTemplateForProd() {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
-        requestFactory.setProxy(proxy);
+        if (StringUtils.hasText(proxyHost) && proxyPort > 0) {
+            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+            requestFactory.setProxy(proxy);
+        }
 
         return new RestTemplate(requestFactory);
     }

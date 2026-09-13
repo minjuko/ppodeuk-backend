@@ -10,19 +10,20 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
+  jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
-      default_batch_fetch_size: 100
+        format_sql: false
+        default_batch_fetch_size: 100
     open-in-view: false
 
 logging:
   level:
     '[bdbe.bdbd]': INFO
-    '[org.hibernate.type]': TRACE
+    '[org.hibernate.type]': WARN
 
 cloud:
   aws:
@@ -34,8 +35,8 @@ cloud:
     s3:
       bucket: ${AWS_BUCKET_NAME}
     proxy:
-      host: krmp-proxy.9rum.cc
-      port: 3128
+      host: ${AWS_PROXY_HOST:}
+      port: ${AWS_PROXY_PORT:0}
     stack:
       auto: false
 
@@ -45,14 +46,14 @@ kakao:
 payment:
   external:
     enabled: true
-  approval-url: https://k923062c3c512a.user-app.krampoline.com/paymentwaiting
-  cancel-url: https://k923062c3c512a.user-app.krampoline.com/paymentfail
-  fail-url: https://k923062c3c512a.user-app.krampoline.com/paymentfail
+  approval-url: ${PAYMENT_APPROVAL_URL:http://localhost:5173/paymentwaiting}
+  cancel-url: ${PAYMENT_CANCEL_URL:http://localhost:5173/paymentfail}
+  fail-url: ${PAYMENT_FAIL_URL:http://localhost:5173/paymentfail}
 frontend:
   localurl: http://localhost:5173
   prod:
-    userurl: https://k923062c3c512a.user-app.krampoline.com
-    ownerurl: https://kae2e326be433a.user-app.krampoline.com
+    userurl: ${PROD_USER_FRONTEND_URL:http://localhost:5173}
+    ownerurl: ${PROD_OWNER_FRONTEND_URL:http://localhost:5174}
 
 storage:
   s3:
