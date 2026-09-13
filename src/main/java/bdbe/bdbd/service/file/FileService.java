@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Transactional
@@ -89,7 +90,7 @@ public class FileService {
                 .orElseThrow(() -> new NotFoundError(
                         NotFoundError.ErrorCode.RESOURCE_NOT_FOUND,
                         Collections.singletonMap("fileId", "File id " + fileId + " not found.")));
-        if (file.getCarwash().getMember().getId() != member.getId()) {
+        if (!Objects.equals(file.getCarwash().getMember().getId(), member.getId())) {
             throw new ForbiddenError(
                     ForbiddenError.ErrorCode.RESOURCE_ACCESS_FORBIDDEN,
                     Collections.singletonMap("MemberId", "Member is not the owner of the Carwash related to file.")

@@ -246,7 +246,7 @@ public class CarwashService {
                         NotFoundError.ErrorCode.RESOURCE_NOT_FOUND,
                         Collections.singletonMap("CarwashId", "CarwashId not found")
                 ));
-        if (carwash.getMember().getId() != member.getId())
+        if (!Objects.equals(carwash.getMember().getId(), member.getId()))
             throw new ForbiddenError(
                     ForbiddenError.ErrorCode.RESOURCE_ACCESS_FORBIDDEN,
                     Collections.singletonMap("MemberId", "Member is not the owner of the carwash.")
@@ -279,7 +279,7 @@ public class CarwashService {
                         NotFoundError.ErrorCode.RESOURCE_NOT_FOUND,
                         Collections.singletonMap("CarwashId", "Carwash not found")
                 ));
-        if (carwash.getMember().getId() != member.getId()) {
+        if (!Objects.equals(carwash.getMember().getId(), member.getId())) {
             throw new ForbiddenError(
                     ForbiddenError.ErrorCode.RESOURCE_ACCESS_FORBIDDEN,
                     Collections.singletonMap("MemberId", "Member is not the owner of the carwash.")

@@ -153,7 +153,7 @@ public class OwnerService {
                         Collections.singletonMap("CarwashId", "Carwash not found")
                 ));
 
-        if (carwash.getMember().getId() != sessionMember.getId()) {
+        if (!Objects.equals(carwash.getMember().getId(), sessionMember.getId())) {
             throw new ForbiddenError(
                     ForbiddenError.ErrorCode.RESOURCE_ACCESS_FORBIDDEN,
                     Collections.singletonMap("CarwashId", "Member is not the owner of the carwash.")

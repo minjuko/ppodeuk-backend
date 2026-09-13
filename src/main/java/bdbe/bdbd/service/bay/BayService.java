@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Objects;
 
 import static bdbe.bdbd.dto.bay.BayResponse.BayRevenueResponseDTO;
 
@@ -35,7 +36,7 @@ public class BayService {
                         Collections.singletonMap("CarwashId", "Carwash not found")
                 ));
 
-        if (carwash.getMember().getId() != member.getId()) {
+        if (!Objects.equals(carwash.getMember().getId(), member.getId())) {
             throw new ForbiddenError(
                     ForbiddenError.ErrorCode.RESOURCE_ACCESS_FORBIDDEN,
                     Collections.singletonMap("MemberId", "Member is not the owner of the carwash.")
@@ -66,7 +67,7 @@ public class BayService {
                         Collections.singletonMap("Bay", "Bay not found")
                 ));
 
-        if (bay.getCarwash().getMember().getId() != member.getId()) {
+        if (!Objects.equals(bay.getCarwash().getMember().getId(), member.getId())) {
             throw new ForbiddenError(
                     ForbiddenError.ErrorCode.RESOURCE_ACCESS_FORBIDDEN,
                     Collections.singletonMap("MemberId", "Member is not the owner of the carwash.")
@@ -82,7 +83,7 @@ public class BayService {
                         Collections.singletonMap("Bay", "Bay not found")
                 ));
 
-        if (bay.getCarwash().getMember().getId() != member.getId()) {
+        if (!Objects.equals(bay.getCarwash().getMember().getId(), member.getId())) {
             throw new ForbiddenError(
                     ForbiddenError.ErrorCode.RESOURCE_ACCESS_FORBIDDEN,
                     Collections.singletonMap("MemberId", "Member is not the owner of the carwash.")
@@ -110,7 +111,7 @@ public class BayService {
                             Collections.singletonMap("BayId", "Bay not found"));
                 });
 
-        if (bay.getCarwash().getMember().getId() != member.getId()) {
+        if (!Objects.equals(bay.getCarwash().getMember().getId(), member.getId())) {
             throw new ForbiddenError(
                         ForbiddenError.ErrorCode.RESOURCE_ACCESS_FORBIDDEN,
                         Collections.singletonMap("MemberId", "Member is not the owner of the carwash."));
