@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDateTime;
 
 import javax.validation.Valid;
 
@@ -58,18 +60,22 @@ public class UserReservationController {
 
     @GetMapping("/reservations/current-status")
     public ResponseEntity<?> findCurrentStatusReservation(
+            @RequestParam(value = "selected-at", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime selectedAt,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        ReservationResponse.fetchCurrentStatusReservationDTO dto = reservationService.findCurrentStatusReservation(userDetails.getMember());
+        ReservationResponse.fetchCurrentStatusReservationDTO dto = reservationService.findCurrentStatusReservation(userDetails.getMember(), selectedAt);
 
         return ResponseEntity.ok(ApiUtils.success(dto));
     }
 
     @GetMapping("/reservations/recent")
     public ResponseEntity<?> findRecentReservation(
+            @RequestParam(value = "selected-at", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime selectedAt,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        ReservationResponse.fetchRecentReservationDTO dto = reservationService.findRecentReservation(userDetails.getMember());
+        ReservationResponse.fetchRecentReservationDTO dto = reservationService.findRecentReservation(userDetails.getMember(), selectedAt);
 
         return ResponseEntity.ok(ApiUtils.success(dto));
     }

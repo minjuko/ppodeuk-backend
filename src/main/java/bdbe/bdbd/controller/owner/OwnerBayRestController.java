@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.Valid;
 
@@ -45,11 +46,21 @@ public class OwnerBayRestController {
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 
+    @DeleteMapping("/bays/{bay-id}")
+    public ResponseEntity<?> deleteBay(
+            @PathVariable("bay-id") Long bayId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        bayService.deleteBay(bayId, userDetails.getMember());
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
     @GetMapping("/bays/{bay-id}/revenue")
     public ResponseEntity<?> findBayRevenue(
             @PathVariable("bay-id") Long bayId,
+            @RequestParam(value = "selected-date", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd") java.time.LocalDate selectedDate,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        BayResponse.BayRevenueResponseDTO dto = bayService.findBayRevenue(bayId, userDetails.getMember());
+        BayResponse.BayRevenueResponseDTO dto = bayService.findBayRevenue(bayId, userDetails.getMember(), selectedDate);
 
         return ResponseEntity.ok(ApiUtils.success(dto));
     }

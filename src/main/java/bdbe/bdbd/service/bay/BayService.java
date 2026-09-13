@@ -75,7 +75,34 @@ public class BayService {
         bay.changeStatus(status);
     }
 
+    public void deleteBay(Long bayId, Member member) {
+        Bay bay = bayJPARepository.findById(bayId)
+                .orElseThrow(() -> new NotFoundError(
+                        NotFoundError.ErrorCode.RESOURCE_NOT_FOUND,
+                        Collections.singletonMap("Bay", "Bay not found")
+                ));
+
+        if (bay.getCarwash().getMember().getId() != member.getId()) {
+            throw new ForbiddenError(
+                    ForbiddenError.ErrorCode.RESOURCE_ACCESS_FORBIDDEN,
+                    Collections.singletonMap("MemberId", "Member is not the owner of the carwash.")
+            );
+        }
+
+        if (!reservationJPARepository.findByBay_IdAndIsDeletedFalse(bayId).isEmpty()) {
+            throw new BadRequestError(
+                    BadRequestError.ErrorCode.VALIDATION_FAILED,
+                    Collections.singletonMap("Bay", "예약이 있는 베이는 삭제할 수 없습니다.")
+            );
+        }
+        bayJPARepository.delete(bay);
+    }
+
     public BayRevenueResponseDTO findBayRevenue(Long bayId, Member member) {
+        return findBayRevenue(bayId, member, null);
+    }
+
+    public BayRevenueResponseDTO findBayRevenue(Long bayId, Member member, LocalDate selectedDate) {
         Bay bay = bayJPARepository.findById(bayId)
                 .orElseThrow(() -> {
                     throw new NotFoundError(
@@ -91,7 +118,7 @@ public class BayService {
 
         BayRevenueResponseDTO dto = new BayRevenueResponseDTO();
 
-        LocalDate firstDayOfCurrentMonth = LocalDate.now().withDayOfMonth(1);
+        LocalDate firstDayOfCurrentMonth = (selectedDate != null ? selectedDate : LocalDate.now()).withDayOfMonth(1);
         Long monthlyReservationCountByBayIdAndDate = reservationJPARepository.findMonthlyReservationCountByBayIdAndDate(bayId, firstDayOfCurrentMonth);
         dto.setReservationCnt(monthlyReservationCountByBayIdAndDate);
 

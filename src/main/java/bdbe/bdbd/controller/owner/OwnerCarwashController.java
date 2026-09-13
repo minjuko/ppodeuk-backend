@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -106,9 +107,11 @@ public class OwnerCarwashController {
 
     @GetMapping("/carwashes")
     public ResponseEntity<?> fetchOwnerReservationOverview(
+            @RequestParam(value = "selected-date", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate selectedDate,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        OwnerResponse.ReservationOverviewResponseDTO dto = ownerService.fetchOwnerReservationOverview(userDetails.getMember());
+        OwnerResponse.ReservationOverviewResponseDTO dto = ownerService.fetchOwnerReservationOverview(userDetails.getMember(), selectedDate);
 
         return ResponseEntity.ok(ApiUtils.success(dto));
     }
@@ -117,6 +120,8 @@ public class OwnerCarwashController {
     public ResponseEntity<?> findAllOwnerReservation(
             @RequestParam(value = "carwash-ids", required = false) List<Long> carwashIds,
             @RequestParam(value = "selected-date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate selectedDate,
+            @RequestParam(value = "selected-at", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime selectedAt,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         if (carwashIds == null || carwashIds.isEmpty()) {
@@ -124,7 +129,7 @@ public class OwnerCarwashController {
 
             return ResponseEntity.ok(ApiUtils.success(dto));
         }
-        OwnerResponse.SaleResponseDTO saleResponseDTO = ownerService.findSales(carwashIds, selectedDate, userDetails.getMember());
+        OwnerResponse.SaleResponseDTO saleResponseDTO = ownerService.findSales(carwashIds, selectedDate, selectedAt, userDetails.getMember());
 
         return ResponseEntity.ok(ApiUtils.success(saleResponseDTO));
     }
@@ -132,9 +137,11 @@ public class OwnerCarwashController {
     @GetMapping("/carwashes/{carwash-id}")
     public ResponseEntity<?> fetchCarwashReservationOverview(
             @PathVariable("carwash-id") Long carwashId,
+            @RequestParam(value = "selected-date", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate selectedDate,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        OwnerResponse.CarwashManageDTO dto = ownerService.findCarwashReservationOverview(carwashId, userDetails.getMember());
+        OwnerResponse.CarwashManageDTO dto = ownerService.findCarwashReservationOverview(carwashId, userDetails.getMember(), selectedDate);
 
         return ResponseEntity.ok(ApiUtils.success(dto));
     }
@@ -163,9 +170,11 @@ public class OwnerCarwashController {
 
     @GetMapping("/home")
     public ResponseEntity<?> fetchOwnerHomepage(
+            @RequestParam(value = "selected-date", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate selectedDate,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        OwnerResponse.OwnerDashboardDTO dto = ownerService.fetchOwnerHomepage(userDetails.getMember());
+        OwnerResponse.OwnerDashboardDTO dto = ownerService.fetchOwnerHomepage(userDetails.getMember(), selectedDate);
 
         return ResponseEntity.ok(ApiUtils.success(dto));
     }

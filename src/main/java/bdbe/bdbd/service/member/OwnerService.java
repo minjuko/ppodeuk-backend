@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static java.lang.String.valueOf;
@@ -89,11 +90,18 @@ public class OwnerService {
     }
 
     public OwnerResponse.SaleResponseDTO findSales(List<Long> carwashIds, LocalDate selectedDate, Member sessionMember) {
+        return findSales(carwashIds, selectedDate, null, sessionMember);
+    }
+
+    public OwnerResponse.SaleResponseDTO findSales(List<Long> carwashIds, LocalDate selectedDate, LocalDateTime selectedAt, Member sessionMember) {
         validateCarwashOwnership(carwashIds, sessionMember);
 
         List<Carwash> carwashList = carwashJPARepository.findCarwashesByMemberId(sessionMember.getId());
 
-        List<Reservation> reservationList = reservationJPARepository.findAllByCarwash_IdInOrderByStartTimeDesc(carwashIds, LocalDate.of(selectedDate.getYear(), selectedDate.getMonth(), selectedDate.getDayOfMonth()));
+        LocalDate normalizedDate = LocalDate.of(selectedDate.getYear(), selectedDate.getMonth(), selectedDate.getDayOfMonth());
+        List<Reservation> reservationList = selectedAt == null
+                ? reservationJPARepository.findAllByCarwash_IdInOrderByStartTimeDesc(carwashIds, normalizedDate)
+                : reservationJPARepository.findAllByCarwash_IdInOrderByStartTimeDescBefore(carwashIds, normalizedDate, selectedAt);
         if (reservationList.isEmpty()) return new OwnerResponse.SaleResponseDTO(carwashList, new ArrayList<>());
 
         return new OwnerResponse.SaleResponseDTO(carwashList, reservationList);
@@ -170,6 +178,10 @@ public class OwnerService {
     }
 
     public OwnerResponse.ReservationOverviewResponseDTO fetchOwnerReservationOverview(Member sessionMember) {
+        return fetchOwnerReservationOverview(sessionMember, null);
+    }
+
+    public OwnerResponse.ReservationOverviewResponseDTO fetchOwnerReservationOverview(Member sessionMember, LocalDate selectedDate) {
         List<Carwash> carwashList = carwashJPARepository.findByMember_Id(sessionMember.getId());
 
         OwnerResponse.ReservationOverviewResponseDTO response = new OwnerResponse.ReservationOverviewResponseDTO();
@@ -178,7 +190,7 @@ public class OwnerService {
             List<Bay> bayList = bayJPARepository.findByCarwashId(carwash.getId());
             List<Optime> optimeList = optimeJPARepository.findByCarwash_Id(carwash.getId());
 
-            Date today = java.sql.Date.valueOf(LocalDate.now());
+            Date today = java.sql.Date.valueOf(selectedDate != null ? selectedDate : LocalDate.now());
             List<Reservation> reservationList = reservationJPARepository.findTodaysReservationsByCarwashId(carwash.getId(), today);
 
             List<File> carwashImageList = fileJPARepository.findByCarwash_IdAndIsDeletedFalse(carwash.getId());
@@ -191,13 +203,18 @@ public class OwnerService {
     }
 
     public OwnerResponse.CarwashManageDTO findCarwashReservationOverview(Long carwashId, Member sessionMember) {
+        return findCarwashReservationOverview(carwashId, sessionMember, null);
+    }
+
+    public OwnerResponse.CarwashManageDTO findCarwashReservationOverview(Long carwashId, Member sessionMember, LocalDate selectedDate) {
         Carwash carwash = carwashJPARepository.findByIdAndMember_Id(carwashId, sessionMember.getId())
                 .orElseThrow(() -> new ForbiddenError(
                         ForbiddenError.ErrorCode.RESOURCE_ACCESS_FORBIDDEN,
                         Collections.singletonMap("CarwashId", "Member is not the owner of the carwash.")
                 ));
 
-        LocalDate firstDayOfCurrentMonth = LocalDate.now().withDayOfMonth(1);
+        LocalDate referenceDate = selectedDate != null ? selectedDate : LocalDate.now();
+        LocalDate firstDayOfCurrentMonth = referenceDate.withDayOfMonth(1);
 
         Long monthlySales = reservationJPARepository.findTotalRevenueByCarwashIdAndDate(carwashId, firstDayOfCurrentMonth);
         Long monthlyReservations = reservationJPARepository.findMonthlyReservationCountByCarwashIdAndDate(carwashId, firstDayOfCurrentMonth);
@@ -205,7 +222,7 @@ public class OwnerService {
         List<Bay> bayList = bayJPARepository.findByCarwashId(carwash.getId());
         List<Optime> optimeList = optimeJPARepository.findByCarwash_Id(carwash.getId());
 
-        Date today = java.sql.Date.valueOf(LocalDate.now());
+        Date today = java.sql.Date.valueOf(selectedDate != null ? selectedDate : LocalDate.now());
         List<Reservation> reservationList = reservationJPARepository.findTodaysReservationsByCarwashId(carwash.getId(), today);
 
         List<File> carwashImageList = fileJPARepository.findByCarwash_IdAndIsDeletedFalse(carwash.getId());
@@ -226,9 +243,14 @@ public class OwnerService {
     }
 
     public OwnerDashboardDTO fetchOwnerHomepage(Member sessionMember) {
+        return fetchOwnerHomepage(sessionMember, null);
+    }
+
+    public OwnerDashboardDTO fetchOwnerHomepage(Member sessionMember, LocalDate selectedDate) {
         List<Long> carwashIdList = carwashJPARepository.findCarwashIdsByMemberId(sessionMember.getId());
-        LocalDate firstDayOfCurrentMonth = LocalDate.now().withDayOfMonth(1);
-        LocalDate firstDayOfPreviousMonth = LocalDate.now().minusMonths(1).withDayOfMonth(1);
+        LocalDate referenceDate = selectedDate != null ? selectedDate : LocalDate.now();
+        LocalDate firstDayOfCurrentMonth = referenceDate.withDayOfMonth(1);
+        LocalDate firstDayOfPreviousMonth = referenceDate.minusMonths(1).withDayOfMonth(1);
 
         Long currentMonthSales = reservationJPARepository.findTotalRevenueByCarwashIdsAndDate(carwashIdList, firstDayOfCurrentMonth);
         Long previousMonthSales = reservationJPARepository.findTotalRevenueByCarwashIdsAndDate(carwashIdList, firstDayOfPreviousMonth);

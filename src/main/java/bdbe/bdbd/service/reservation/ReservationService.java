@@ -277,13 +277,17 @@ public class ReservationService {
     }
 
     public ReservationResponse.fetchCurrentStatusReservationDTO findCurrentStatusReservation(Member sessionMember) {
+        return findCurrentStatusReservation(sessionMember, null);
+    }
+
+    public ReservationResponse.fetchCurrentStatusReservationDTO findCurrentStatusReservation(Member sessionMember, LocalDateTime selectedAt) {
         List<Reservation> reservationList = reservationJPARepository.findByMemberIdAndIsDeletedFalse(sessionMember.getId());
 
         List<ReservationInfoDTO> current = new ArrayList<>();
         List<ReservationInfoDTO> upcoming = new ArrayList<>();
         List<ReservationInfoDTO> completed = new ArrayList<>();
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = selectedAt != null ? selectedAt : LocalDateTime.now();
         LocalDate today = now.toLocalDate();
         // 예약 분류하기
         for (Reservation reservation : reservationList) {
@@ -326,9 +330,15 @@ public class ReservationService {
     }
 
     public ReservationResponse.fetchRecentReservationDTO findRecentReservation(Member sessionMember) {
+        return findRecentReservation(sessionMember, null);
+    }
+
+    public ReservationResponse.fetchRecentReservationDTO findRecentReservation(Member sessionMember, LocalDateTime selectedAt) {
 
         Pageable pageable = PageRequest.of(0, 5); // 최대 5개까지만 가져오기
-        List<Reservation> reservationList = reservationJPARepository.findByMemberIdJoinFetch(sessionMember.getId(), pageable);
+        List<Reservation> reservationList = selectedAt == null
+                ? reservationJPARepository.findByMemberIdJoinFetch(sessionMember.getId(), pageable)
+                : reservationJPARepository.findByMemberIdJoinFetchBefore(sessionMember.getId(), selectedAt, pageable);
         List<ReservationResponse.RecentReservation> recentReservations = new ArrayList<>();
 
         for (Reservation reservation : reservationList) {

@@ -34,8 +34,14 @@ public interface ReservationJPARepository extends JpaRepository<Reservation, Lon
     @Query("SELECT r FROM Reservation r JOIN FETCH r.bay b JOIN FETCH b.carwash WHERE r.member.id = :memberId AND r.isDeleted = false AND r.endTime < CURRENT_TIMESTAMP ORDER BY r.endTime DESC")
     List<Reservation> findByMemberIdJoinFetch(@Param("memberId") Long memberId, Pageable pageable);
 
-    @Query("SELECT r FROM Reservation r JOIN FETCH r.bay b JOIN FETCH b.carwash c JOIN FETCH r.member u WHERE c.id IN :carwashIds AND FUNCTION('YEAR', r.startTime) = FUNCTION('YEAR', :selectedDate) AND FUNCTION('MONTH', r.startTime) = FUNCTION('MONTH', :selectedDate) AND r.isDeleted = false ORDER BY r.startTime DESC")
+    @Query("SELECT r FROM Reservation r JOIN FETCH r.bay b JOIN FETCH b.carwash WHERE r.member.id = :memberId AND r.isDeleted = false AND r.endTime < :selectedAt ORDER BY r.endTime DESC")
+    List<Reservation> findByMemberIdJoinFetchBefore(@Param("memberId") Long memberId, @Param("selectedAt") java.time.LocalDateTime selectedAt, Pageable pageable);
+
+    @Query("SELECT r FROM Reservation r JOIN FETCH r.bay b JOIN FETCH b.carwash c JOIN FETCH r.member u WHERE c.id IN :carwashIds AND FUNCTION('YEAR', r.startTime) = FUNCTION('YEAR', :selectedDate) AND FUNCTION('MONTH', r.startTime) = FUNCTION('MONTH', :selectedDate) AND FUNCTION('DATE', r.startTime) <= :selectedDate AND r.isDeleted = false ORDER BY r.startTime DESC")
     List<Reservation> findAllByCarwash_IdInOrderByStartTimeDesc(@Param("carwashIds") List<Long> carwashIds, @Param("selectedDate") LocalDate selectedDate);
+
+    @Query("SELECT r FROM Reservation r JOIN FETCH r.bay b JOIN FETCH b.carwash c JOIN FETCH r.member u WHERE c.id IN :carwashIds AND FUNCTION('YEAR', r.startTime) = FUNCTION('YEAR', :selectedDate) AND FUNCTION('MONTH', r.startTime) = FUNCTION('MONTH', :selectedDate) AND r.startTime <= :selectedAt AND r.isDeleted = false ORDER BY r.startTime DESC")
+    List<Reservation> findAllByCarwash_IdInOrderByStartTimeDescBefore(@Param("carwashIds") List<Long> carwashIds, @Param("selectedDate") LocalDate selectedDate, @Param("selectedAt") java.time.LocalDateTime selectedAt);
 
     @Query("SELECT r FROM Reservation r JOIN FETCH r.bay b JOIN FETCH b.carwash c WHERE c.id = :carwashId AND FUNCTION('DATE', r.startTime) = :today AND r.isDeleted = false ORDER BY r.startTime DESC")
     List<Reservation> findTodaysReservationsByCarwashId(@Param("carwashId") Long carwashId, @Param("today") Date today);

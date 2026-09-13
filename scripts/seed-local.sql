@@ -18,7 +18,7 @@ DELETE FROM review_keyword WHERE id BETWEEN 1001 AND 1020;
 DELETE FROM review WHERE id BETWEEN 1001 AND 1010;
 DELETE FROM reservation WHERE id BETWEEN 1001 AND 1014;
 DELETE FROM reservation WHERE id BETWEEN 2001 AND 10000;
-DELETE FROM reservation WHERE id IN (10001, 10002);
+DELETE FROM reservation WHERE id IN (10001, 10002) OR id BETWEEN 11001 AND 11025;
 DELETE FROM carwash_keyword WHERE id BETWEEN 1001 AND 1015;
 DELETE FROM optime WHERE id BETWEEN 1001 AND 1010;
 DELETE FROM bay WHERE id BETWEEN 1001 AND 1013;
@@ -264,7 +264,7 @@ BEGIN
         SET v_carwash = 1001;
         WHILE v_carwash <= 1005 DO
             SET v_day = 1;
-            WHILE v_day <= 28 DO
+            WHILE v_day <= DAY(LAST_DAY(DATE_ADD('2026-01-01', INTERVAL (v_month - 1) MONTH))) DO
                 SET v_bookings = CASE v_carwash
                     WHEN 1001 THEN CASE MOD(v_day, 5) WHEN 0 THEN 5 WHEN 1 THEN 4 WHEN 2 THEN 3 ELSE 4 END
                     WHEN 1002 THEN CASE MOD(v_day, 4) WHEN 0 THEN 4 ELSE 3 END
@@ -334,10 +334,10 @@ DROP PROCEDURE IF EXISTS seed_calendar_reservations;
 INSERT INTO reservation
     (id, price, start_time, end_time, is_deleted, created_at, updated_at, b_id, m_id)
 VALUES
-    (10001, 12000, TIMESTAMP('2026-05-13', '12:00:00'), TIMESTAMP('2026-05-13', '13:00:00'),
-     b'0', TIMESTAMP('2026-05-13', '11:00:00'), TIMESTAMP('2026-05-13', '11:00:00'), 1003, 102),
-    (10002, 14000, TIMESTAMP('2026-05-27', '18:00:00'),
-     TIMESTAMP('2026-05-27', '20:00:00'),
+    (10001, 12000, TIMESTAMP('2026-05-30', '12:00:00'), TIMESTAMP('2026-05-30', '13:00:00'),
+     b'0', TIMESTAMP('2026-05-30', '11:00:00'), TIMESTAMP('2026-05-30', '11:00:00'), 1003, 102),
+    (10002, 14000, TIMESTAMP('2026-06-13', '18:00:00'),
+     TIMESTAMP('2026-06-13', '20:00:00'),
      b'0', NOW(6), NOW(6), 1002, 102);
 
 -- Every review references a completed reservation whose end_time is before

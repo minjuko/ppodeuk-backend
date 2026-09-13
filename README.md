@@ -1,4 +1,4 @@
-## 프로젝트 소개
+c## 프로젝트 소개
 ![image](https://github.com/Step3-kakao-tech-campus/Team10_BE/assets/78211281/19affea2-2da0-4a67-bead-985f4f831224)
 
 뽀득뽀득은 `사용자와 세차장 관리자 모두를 위한 셀프세차 예약 플랫폼`입니다.
