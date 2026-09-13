@@ -1,0 +1,70 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.cloud.aws.autoconfigure.context.ContextInstanceDataAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.context.ContextCredentialsAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.context.ContextRegionProviderAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.context.ContextResourceLoaderAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.context.ContextStackAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.mail.MailSenderAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.cache.ElastiCacheAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.messaging.MessagingAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.jdbc.AmazonRdsDatabaseAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.metrics.CloudWatchExportAutoConfiguration
+  datasource:
+    url: jdbc:h2:mem:bdbd-test;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        default_batch_fetch_size: 100
+  sql:
+    init:
+      mode: always
+
+cloud:
+  aws:
+    credentials:
+      accessKey: test-placeholder-access-key
+      secretKey: test-placeholder-secret-key
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: test-placeholder-bucket
+    proxy:
+      host: ""
+      port: 0
+    stack:
+      auto: false
+
+storage:
+  s3:
+    enabled: false
+
+kakao:
+  admin:
+    key: test-placeholder-kakao-admin-key
+
+payment:
+  external:
+    enabled: false
+  approval-url: http://localhost.test/paymentwaiting
+  cancel-url: http://localhost.test/paymentfail
+  fail-url: http://localhost.test/paymentfail
+
+frontend:
+  localurl: http://localhost.test
+  prod:
+    userurl: http://user.localhost.test
+    ownerurl: http://owner.localhost.test
+
+security:
+  jwt:
+    secret: test-placeholder-jwt-secret-32-characters-minimum

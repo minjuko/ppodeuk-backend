@@ -71,7 +71,7 @@ class LocalPaymentServiceTest {
         Bay bay = Bay.builder().id(BAY_ID).bayNum(1).carwash(carwash).status(1).build();
         given(bayRepository.findById(BAY_ID)).willReturn(Optional.of(bay));
         given(carwashRepository.findById(CARWASH_ID)).willReturn(Optional.of(carwash));
-        given(reservationService.findPayAmount(any(), eq(BAY_ID)))
+        given(reservationService.findPayAmount(any(), eq(BAY_ID), eq(member)))
                 .willReturn(new ReservationResponse.PayAmountDTO(START, END, 12000));
 
         Reservation reservation = Reservation.builder().id(2001L).build();
@@ -105,11 +105,11 @@ class LocalPaymentServiceTest {
     @Test
     void readyPropagatesOperatingHoursAndOverlapValidation() {
         BadRequestError outside = validation("operatingHours", "out");
-        given(reservationService.findPayAmount(any(), eq(BAY_ID))).willThrow(outside);
+        given(reservationService.findPayAmount(any(), eq(BAY_ID), eq(member))).willThrow(outside);
         assertThatThrownBy(() -> ready(member, BAY_ID, START, END, 12000)).isSameAs(outside);
 
         BadRequestError overlap = validation("Reservation time", "overlap");
-        given(reservationService.findPayAmount(any(), eq(BAY_ID))).willThrow(overlap);
+        given(reservationService.findPayAmount(any(), eq(BAY_ID), eq(member))).willThrow(overlap);
         assertThatThrownBy(() -> ready(member, BAY_ID, START, END, 12000)).isSameAs(overlap);
     }
 
@@ -180,8 +180,9 @@ class LocalPaymentServiceTest {
 
     @Test
     void profileAnnotationsKeepLocalAndProductionImplementationsSeparate() {
-        assertThat(LocalPaymentService.class.getAnnotation(Profile.class).value()).containsExactly("local");
-        assertThat(PayService.class.getAnnotation(Profile.class).value()).containsExactly("!local");
+        assertThat(LocalPaymentService.class.getAnnotation(Profile.class).value())
+                .containsExactly("local", "demo", "test");
+        assertThat(PayService.class.getAnnotation(Profile.class).value()).containsExactly("prod");
     }
 
     @Test
