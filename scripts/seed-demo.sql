@@ -128,21 +128,21 @@ INSERT INTO carwash (id, name, rate, tel, des, price, l_id, m_id) VALUES
 
 -- Local-only static images served by Spring Boot for the portfolio demo.
 INSERT INTO file (id, name, url, uploaded_at, is_deleted, c_id) VALUES
-    (1001, '01-main.jpg',     'https://team10be-production.up.railway.app/demo-images/carwash-1001/01-main.jpg',     NOW(6), false, 1001),
-    (1002, '02-bay.jpg',      'https://team10be-production.up.railway.app/demo-images/carwash-1001/02-bay.jpg',      NOW(6), false, 1001),
-    (1003, '03-facility.jpg', 'https://team10be-production.up.railway.app/demo-images/carwash-1001/03-facility.jpg', NOW(6), false, 1001),
-    (1004, '01-main.jpg',     'https://team10be-production.up.railway.app/demo-images/carwash-1002/01-main.jpg',     NOW(6), false, 1002),
-    (1005, '02-bay.jpg',      'https://team10be-production.up.railway.app/demo-images/carwash-1002/02-bay.jpg',      NOW(6), false, 1002),
-    (1006, '03-facility.jpg', 'https://team10be-production.up.railway.app/demo-images/carwash-1002/03-facility.jpg', NOW(6), false, 1002),
-    (1007, '01-main.jpg',     'https://team10be-production.up.railway.app/demo-images/carwash-1003/01-main.jpg',     NOW(6), false, 1003),
-    (1008, '02-bay.jpg',      'https://team10be-production.up.railway.app/demo-images/carwash-1003/02-bay.jpg',      NOW(6), false, 1003),
-    (1009, '03-facility.jpg', 'https://team10be-production.up.railway.app/demo-images/carwash-1003/03-facility.jpg', NOW(6), false, 1003),
-    (1010, '01-main.jpg',     'https://team10be-production.up.railway.app/demo-images/carwash-1004/01-main.jpg',     NOW(6), false, 1004),
-    (1011, '02-bay.jpg',      'https://team10be-production.up.railway.app/demo-images/carwash-1004/02-bay.jpg',      NOW(6), false, 1004),
-    (1012, '03-facility.jpg', 'https://team10be-production.up.railway.app/demo-images/carwash-1004/03-facility.jpg', NOW(6), false, 1004),
-    (1013, '01-main.jpg',     'https://team10be-production.up.railway.app/demo-images/carwash-1005/01-main.jpg',     NOW(6), false, 1005),
-    (1014, '02-bay.jpg',      'https://team10be-production.up.railway.app/demo-images/carwash-1005/02-bay.jpg',      NOW(6), false, 1005),
-    (1015, '03-facility.jpg', 'https://team10be-production.up.railway.app/demo-images/carwash-1005/03-facility.jpg', NOW(6), false, 1005);
+    (1001, '01-main.jpg',     'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1001/01-main.jpg',     NOW(6), false, 1001),
+    (1002, '02-bay.jpg',      'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1001/02-bay.jpg',      NOW(6), false, 1001),
+    (1003, '03-facility.jpg', 'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1001/03-facility.jpg', NOW(6), false, 1001),
+    (1004, '01-main.jpg',     'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1002/01-main.jpg',     NOW(6), false, 1002),
+    (1005, '02-bay.jpg',      'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1002/02-bay.jpg',      NOW(6), false, 1002),
+    (1006, '03-facility.jpg', 'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1002/03-facility.jpg', NOW(6), false, 1002),
+    (1007, '01-main.jpg',     'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1003/01-main.jpg',     NOW(6), false, 1003),
+    (1008, '02-bay.jpg',      'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1003/02-bay.jpg',      NOW(6), false, 1003),
+    (1009, '03-facility.jpg', 'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1003/03-facility.jpg', NOW(6), false, 1003),
+    (1010, '01-main.jpg',     'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1004/01-main.jpg',     NOW(6), false, 1004),
+    (1011, '02-bay.jpg',      'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1004/02-bay.jpg',      NOW(6), false, 1004),
+    (1012, '03-facility.jpg', 'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1004/03-facility.jpg', NOW(6), false, 1004),
+    (1013, '01-main.jpg',     'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1005/01-main.jpg',     NOW(6), false, 1005),
+    (1014, '02-bay.jpg',      'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1005/02-bay.jpg',      NOW(6), false, 1005),
+    (1015, '03-facility.jpg', 'https://ppodeuk-backend.up.railway.app/demo-images/carwash-1005/03-facility.jpg', NOW(6), false, 1005);
 
 -- Different operating-hour patterns per carwash.
 -- Reservations use the intersection of each WEEKDAY/WEEKEND range, so
