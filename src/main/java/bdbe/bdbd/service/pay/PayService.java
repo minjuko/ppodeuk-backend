@@ -148,6 +148,7 @@ public class PayService implements PaymentFlowService {
         } catch (HttpClientErrorException e) {
             HttpStatus status = e.getStatusCode();
             String errorMessage = getString(objectMapper, e.getResponseBodyAsString());
+            log.warn("KakaoPay ready rejected: status={}, message={}", status.value(), errorMessage);
 
             UnAuthorizedError error = new UnAuthorizedError(
                     UnAuthorizedError.ErrorCode.AUTHENTICATION_FAILED,
@@ -180,9 +181,26 @@ public class PayService implements PaymentFlowService {
     private String getString(ObjectMapper objectMapper, String response) {
         try {
             JsonNode jsonNode = objectMapper.readTree(response);
-            return jsonNode.path("message").asText("Error processing the request");
+            String message = jsonNode.path("message").asText("");
+            if (!message.isBlank()) {
+                return message;
+            }
+
+            String errorMessage = jsonNode.path("error_message").asText("");
+            String errorCode = jsonNode.path("error_code").asText("");
+            if (!errorMessage.isBlank()) {
+                return errorCode.isBlank()
+                        ? errorMessage
+                        : errorCode + ": " + errorMessage;
+            }
+
+            return response == null || response.isBlank()
+                    ? "Error processing the request"
+                    : response;
         } catch (JsonProcessingException e) {
-            return "Error processing the request";
+            return response == null || response.isBlank()
+                    ? "Error processing the request"
+                    : response;
         }
     }
 
