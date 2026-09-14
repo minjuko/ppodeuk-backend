@@ -127,6 +127,8 @@ SPRING_PROFILES_ACTIVE=test ./gradlew clean test bootJar --no-daemon
 
 USER·OWNER Frontend와 Spring Boot API·MariaDB를 연결해 배포했으며, USER 예약 흐름의 **KakaoPay 테스트 결제**까지 확인했습니다. 테스트 결제는 실제 청구를 위한 운영 결제가 아닙니다.
 
+배포 환경의 포트폴리오 테스트 계정은 각 Frontend README에 안내되어 있습니다. 계정은 여러 방문자가 함께 사용하는 데모 계정이므로 실제 개인정보와 결제정보를 입력하지 않습니다.
+
 ## 관련 저장소
 
 - [USER Frontend](https://github.com/minjuko/ppodeuk-user-frontend) — 개인 주요 담당, 사용자 예약 흐름
