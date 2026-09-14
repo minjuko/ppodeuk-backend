@@ -117,9 +117,15 @@ SPRING_PROFILES_ACTIVE=test ./gradlew clean test bootJar --no-daemon
 | `test` | 자동 테스트·CI | 비활성화 | 사용하지 않음 |
 | `prod` | 운영 설정 | 환경변수 필요 | AWS S3 |
 
-## 배포 상태
+## Live Deployment
 
-로컬 실행, 자동 테스트와 빌드는 검증했지만 현재 공개 배포는 운영하지 않습니다. 외부 공개 주소는 전체 배포 검증이 끝난 뒤 안내합니다.
+| Service | URL | Environment |
+|---|---|---|
+| USER Frontend | [ppodeuk-user.vercel.app](https://ppodeuk-user.vercel.app/) | Vercel |
+| OWNER Frontend | [ppodeuk-owner.vercel.app](https://ppodeuk-owner.vercel.app/) | Vercel |
+| Backend API | [team10be-production.up.railway.app](https://team10be-production.up.railway.app/) | Railway · MariaDB |
+
+USER·OWNER Frontend와 Spring Boot API·MariaDB를 연결해 배포했으며, USER 예약 흐름의 **KakaoPay 테스트 결제**까지 확인했습니다. 테스트 결제는 실제 청구를 위한 운영 결제가 아닙니다.
 
 ## 관련 저장소
 
