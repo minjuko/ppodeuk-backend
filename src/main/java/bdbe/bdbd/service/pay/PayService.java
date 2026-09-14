@@ -27,8 +27,6 @@ import org.springframework.http.*;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
@@ -114,25 +112,25 @@ public class PayService implements PaymentFlowService {
 
         // API 요청 보내기
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.set("Authorization", "KakaoAK " + adminKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "SECRET_KEY " + adminKey);
 
         requestDto.setTotal_amount(totalAmount);
 
-        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-        parameters.add("cid", requestDto.getCid());
-        parameters.add("partner_order_id", requestDto.getPartner_order_id());
-        parameters.add("partner_user_id", requestDto.getPartner_user_id());
-        parameters.add("item_name", requestDto.getItem_name());
-        parameters.add("quantity", requestDto.getQuantity().toString());
-        parameters.add("total_amount", requestDto.getTotal_amount().toString());
-        parameters.add("tax_free_amount", requestDto.getTax_free_amount().toString());
-        parameters.add("approval_url", approval_url);
-        parameters.add("cancel_url", cancel_url);
-        parameters.add("fail_url", fail_url);
+        Map<String, Object> parameters = new java.util.LinkedHashMap<>();
+        parameters.put("cid", requestDto.getCid());
+        parameters.put("partner_order_id", requestDto.getPartner_order_id());
+        parameters.put("partner_user_id", requestDto.getPartner_user_id());
+        parameters.put("item_name", requestDto.getItem_name());
+        parameters.put("quantity", requestDto.getQuantity());
+        parameters.put("total_amount", requestDto.getTotal_amount());
+        parameters.put("tax_free_amount", requestDto.getTax_free_amount());
+        parameters.put("approval_url", approval_url);
+        parameters.put("cancel_url", cancel_url);
+        parameters.put("fail_url", fail_url);
         log.info("Requesting KakaoPay ready state for bayId={}", bayId);
 
-        String url = "https://kapi.kakao.com/v1/payment/ready";
+        String url = "https://open-api.kakaopay.com/online/v1/payment/ready";
 
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -218,18 +216,18 @@ public class PayService implements PaymentFlowService {
 
         // API 요청 보내기
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.set("Authorization", "KakaoAK " + adminKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "SECRET_KEY " + adminKey);
 
-        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-        parameters.add("cid", requestDto.getCid());
-        parameters.add("tid", requestDto.getTid());
-        parameters.add("partner_order_id", requestDto.getPartner_order_id());
-        parameters.add("partner_user_id", requestDto.getPartner_user_id());
-        parameters.add("pg_token", requestDto.getPg_token());
+        Map<String, Object> parameters = new java.util.LinkedHashMap<>();
+        parameters.put("cid", requestDto.getCid());
+        parameters.put("tid", requestDto.getTid());
+        parameters.put("partner_order_id", requestDto.getPartner_order_id());
+        parameters.put("partner_user_id", requestDto.getPartner_user_id());
+        parameters.put("pg_token", requestDto.getPg_token());
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(parameters, headers);
-        String url = "https://kapi.kakao.com/v1/payment/approve";
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(parameters, headers);
+        String url = "https://open-api.kakaopay.com/online/v1/payment/approve";
 
         ResponseEntity<String> paymentApprovalResponse = restTemplate.postForEntity(url, request, String.class);
 

@@ -28,12 +28,12 @@ logging:
 cloud:
   aws:
     credentials:
-      accessKey:  ${AWS_ACCESS_KEY_ID}
-      secretKey: ${AWS_SECRET_ACCESS_KEY}
+      accessKey:  ${AWS_ACCESS_KEY_ID:}
+      secretKey: ${AWS_SECRET_ACCESS_KEY:}
     region:
       static: ap-northeast-2
     s3:
-      bucket: ${AWS_BUCKET_NAME}
+      bucket: ${AWS_BUCKET_NAME:}
     proxy:
       host: ${AWS_PROXY_HOST:}
       port: ${AWS_PROXY_PORT:0}
@@ -57,7 +57,7 @@ frontend:
 
 storage:
   s3:
-    enabled: true
+    enabled: ${STORAGE_S3_ENABLED:false}
 
 security:
   jwt:
