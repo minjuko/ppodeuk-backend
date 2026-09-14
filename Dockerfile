@@ -11,4 +11,4 @@ COPY --from=build /workspace/build/libs/bdbd.jar /app/bdbd.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-Dspring.profiles.active=demo", "-jar", "/app/bdbd.jar"]
+ENTRYPOINT ["sh", "-c", "exec java -Dspring.profiles.active=\"${SPRING_PROFILES_ACTIVE:-demo}\" -jar /app/bdbd.jar"]
