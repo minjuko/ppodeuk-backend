@@ -39,7 +39,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
-@Profile("prod")
+@Profile("prod | local-external")
 @RequiredArgsConstructor
 public class PayService implements PaymentFlowService {
 

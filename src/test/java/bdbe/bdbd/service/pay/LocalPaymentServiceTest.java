@@ -182,7 +182,8 @@ class LocalPaymentServiceTest {
     void profileAnnotationsKeepLocalAndProductionImplementationsSeparate() {
         assertThat(LocalPaymentService.class.getAnnotation(Profile.class).value())
                 .containsExactly("local", "demo", "test");
-        assertThat(PayService.class.getAnnotation(Profile.class).value()).containsExactly("prod");
+        assertThat(PayService.class.getAnnotation(Profile.class).value())
+                .containsExactly("prod | local-external");
     }
 
     @Test

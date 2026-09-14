@@ -56,6 +56,15 @@ class PaymentProfileConfigurationTest {
     }
 
     @Test
+    void localExternalProfileRegistersExactlyOneExternalPaymentFlow() {
+        try (AnnotationConfigApplicationContext context = context("local-external", true)) {
+            assertThat(context.getBeansOfType(PaymentFlowService.class)).hasSize(1);
+            assertThat(context.getBeansOfType(PayService.class)).hasSize(1);
+            assertThat(context.getBeansOfType(LocalPaymentService.class)).isEmpty();
+        }
+    }
+
+    @Test
     void demoPaymentReadyUsesFakeFlowWithoutCallingKakaoPay() {
         try (AnnotationConfigApplicationContext context = context("demo", false)) {
                     ReservationService reservationService = context.getBean(ReservationService.class);
