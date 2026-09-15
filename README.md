@@ -2,10 +2,10 @@
 
 [![Backend CI](https://github.com/minjuko/ppodeuk-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/minjuko/ppodeuk-backend/actions/workflows/ci.yml)
 
-셀프 세차장 탐색·예약 서비스 **뽀득뽀득**의 Spring Boot API 서버입니다. 사용자용 USER Frontend와 사업자용 OWNER Frontend에 인증, 세차장, 예약, 결제, 리뷰와 운영 관리 API를 제공합니다.
+셀프 세차장 탐색·예약 서비스 **뽀득뽀득**의 Spring Boot API 서버입니다. 사용자용 USER Frontend와 사업자용 OWNER Frontend가 인증, 세차장, 예약, 결제, 리뷰와 운영 관리 기능을 사용할 수 있도록 API를 제공합니다.
 
 > Backend의 2023년 구현은 Backend 팀원이 담당했습니다.  
-> 개인의 팀 프로젝트 주요 담당은 [USER Frontend](https://github.com/minjuko/ppodeuk-user-frontend)이며, Backend에서는 API 요청·응답 명세와 연동 과정에 참여했습니다. 이후 로컬 재현 환경, 테스트와 CI 등 개선 작업을 진행했습니다.
+> 개인의 팀 프로젝트 주요 담당은 [USER Frontend](https://github.com/minjuko/ppodeuk-user-frontend)입니다. Backend에서는 API 요청·응답 명세와 연동 과정에 참여했고, 이후 로컬 재현 환경, 테스트와 CI를 보완했습니다.
 
 ## 프로젝트 정보
 
