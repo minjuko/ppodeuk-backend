@@ -70,7 +70,7 @@ JDK 17과 `test` 프로필에서 외부 DB, AWS, KakaoPay와 Frontend 서버 없
 | Tests | 85개 통과 |
 | Failure / Skip | 0 / 0 |
 | Executable JAR | `bdbd.jar` 빌드 성공 |
-| GitHub Actions | `test`·`build` 실행하도록 설정 (변경 후 원격 실행 결과 미확인) |
+| GitHub Actions | `f5133a4`의 `test`·`build` 실행 성공 |
 
 CI는 `main` 브랜치 push와 pull request에서 Gradle Wrapper를 검증하고 `./gradlew clean test build --no-daemon`을 실행하도록 설정되어 있습니다.
 
@@ -140,7 +140,7 @@ USER·OWNER Frontend와 Spring Boot API·MariaDB를 연결해 배포했으며, U
 
 ## 2026년 개인 개선·검증: 예약·결제 서버 경계
 
-2026-09-18 원본 커밋 기준 JDK 17, Gradle Wrapper 8.2.1, Spring Boot 2.7.6에서 테스트 소스 파일 17개, 83건 통과(실패·건너뜀 0), `gradlew.bat build` 성공을 확인했습니다. 변경 후 같은 17개 파일에서 85건 통과(실패·건너뜀 0), `gradlew.bat build`와 `git diff --check` 성공을 확인했습니다. 별도 정적 분석 도구는 실행하지 않았습니다. CI 워크플로는 Wrapper 검증, Java 17 설정, Gradle 캐시 준비 후 `clean test build`를 실행하도록 설정했습니다. 이 변경의 원격 CI 실행 결과는 확인하지 않았습니다.
+2026-09-18 원본 커밋 기준 JDK 17, Gradle Wrapper 8.2.1, Spring Boot 2.7.6에서 테스트 소스 파일 17개, 83건 통과(실패·건너뜀 0), `gradlew.bat build` 성공을 확인했습니다. 변경 후 같은 17개 파일에서 85건 통과(실패·건너뜀 0), `gradlew.bat build`와 `git diff --check` 성공을 확인했습니다. 별도 정적 분석 도구는 실행하지 않았습니다. CI 워크플로는 Wrapper 검증, Java 17 설정, Gradle 캐시 준비 후 `clean test build`를 실행합니다. 커밋 `f5133a4`의 [GitHub Actions 실행](https://github.com/minjuko/ppodeuk-backend/actions/runs/35303591289)은 전체 단계가 성공했습니다.
 
 프론트엔드는 예약 시간과 예상 금액을 표시하고 요청을 보냅니다. 서버는 영업시간, 30분 단위·최소 이용 시간, 기존 예약과의 시간 겹침을 확인하고 세차장 단가로 금액을 다시 계산합니다. 결제 준비 시 요청 금액과 서버 계산 금액을 비교합니다. 이번 변경으로 회원의 기존 예약뿐 아니라 **같은 베이에 있는 다른 회원의 예약**도 겹침 검증 대상에 포함했습니다. 회귀 테스트는 다른 회원의 같은 베이 시간 겹침을 거부하고, 기존 예약 종료 시각에 시작하는 요청은 허용하는 두 경로를 추가했습니다.
 
