@@ -66,13 +66,13 @@ JDK 17과 `test` 프로필에서 외부 DB, AWS, KakaoPay와 Frontend 서버 없
 
 | 검증 항목 | 결과 |
 | --- | --- |
-| Test Files | 16개 |
-| Tests | 82개 통과 |
+| Test Files | 17개 |
+| Tests | 85개 통과 |
 | Failure / Skip | 0 / 0 |
 | Executable JAR | `bdbd.jar` 빌드 성공 |
-| GitHub Actions | test·bootJar 성공 |
+| GitHub Actions | `test`·`build` 실행하도록 설정 (변경 후 원격 실행 결과 미확인) |
 
-CI는 `main` 브랜치 push와 pull request에서 Gradle Wrapper를 검증하고 `./gradlew clean test bootJar --no-daemon`을 실행합니다.
+CI는 `main` 브랜치 push와 pull request에서 Gradle Wrapper를 검증하고 `./gradlew clean test build --no-daemon`을 실행하도록 설정되어 있습니다.
 
 ## 실행 방법
 
@@ -103,7 +103,7 @@ SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
 ### 테스트와 빌드
 
 ```bash
-SPRING_PROFILES_ACTIVE=test ./gradlew clean test bootJar --no-daemon
+SPRING_PROFILES_ACTIVE=test ./gradlew clean test build --no-daemon
 ```
 
 테스트 프로필은 H2 인메모리 DB와 테스트 전용 fixture를 사용하며 별도 secret이나 외부 환경변수가 필요하지 않습니다.
@@ -137,3 +137,11 @@ USER·OWNER Frontend와 Spring Boot API·MariaDB를 연결해 배포했으며, U
 ## 문서
 
 - [2023년 Backend 팀 README 보존본](./docs/archive/README-2023-original.md)
+
+## 2026년 개인 개선·검증: 예약·결제 서버 경계
+
+2026-09-18 원본 커밋 기준 JDK 17, Gradle Wrapper 8.2.1, Spring Boot 2.7.6에서 테스트 소스 파일 17개, 83건 통과(실패·건너뜀 0), `gradlew.bat build` 성공을 확인했습니다. 변경 후 같은 17개 파일에서 85건 통과(실패·건너뜀 0), `gradlew.bat build`와 `git diff --check` 성공을 확인했습니다. 별도 정적 분석 도구는 실행하지 않았습니다. CI 워크플로는 Wrapper 검증, Java 17 설정, Gradle 캐시 준비 후 `clean test build`를 실행하도록 설정했습니다. 이 변경의 원격 CI 실행 결과는 확인하지 않았습니다.
+
+프론트엔드는 예약 시간과 예상 금액을 표시하고 요청을 보냅니다. 서버는 영업시간, 30분 단위·최소 이용 시간, 기존 예약과의 시간 겹침을 확인하고 세차장 단가로 금액을 다시 계산합니다. 결제 준비 시 요청 금액과 서버 계산 금액을 비교합니다. 이번 변경으로 회원의 기존 예약뿐 아니라 **같은 베이에 있는 다른 회원의 예약**도 겹침 검증 대상에 포함했습니다. 회귀 테스트는 다른 회원의 같은 베이 시간 겹침을 거부하고, 기존 예약 종료 시각에 시작하는 요청은 허용하는 두 경로를 추가했습니다.
+
+공개 예약 조회는 현재 점유 현황을 보여 주지만 예약 확정은 아닙니다. 예약은 결제 승인 이후 저장됩니다. 로컬·데모 결제는 서버 메모리의 준비 정보에 대해 토큰·회원·베이·시간·만료를 확인하며, 성공 후 재사용을 막습니다. 외부 KakaoPay 경로는 실제 승인 응답 성공 뒤 예약을 저장하지만 준비 요청과 승인 요청의 결제 식별자·금액을 서버에 영속적으로 묶거나 승인 재시도를 멱등 처리하지 않습니다. 외부 승인 성공 후 예약 저장에 실패하면 결제와 예약이 불일치할 수 있습니다. 두 경로 모두 조회와 저장 사이의 동시 요청을 DB 잠금·제약으로 직렬화하지 않으므로 동시 예약 방지는 보장하지 않습니다. 운영 결제와 운영 DB를 사용한 검증은 수행하지 않았습니다.

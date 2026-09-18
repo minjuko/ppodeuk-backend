@@ -198,9 +198,11 @@ public class ReservationService {
             );
         }
 
-        List<Reservation> reservationList = member == null
-                ? reservationJPARepository.findByBay_IdAndIsDeletedFalse(bayId)
-                : reservationJPARepository.findByMemberIdAndIsDeletedFalse(member.getId());
+        List<Reservation> reservationList = new ArrayList<>(
+                reservationJPARepository.findByBay_IdAndIsDeletedFalse(bayId));
+        if (member != null) {
+            reservationList.addAll(reservationJPARepository.findByMemberIdAndIsDeletedFalse(member.getId()));
+        }
 
         boolean isOverlapping = reservationList.stream()
         .filter(existingReservation -> excludedReservationId == null

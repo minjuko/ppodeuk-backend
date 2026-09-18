@@ -154,6 +154,49 @@ class ReservationDateTimeRegressionTest {
                         .containsEntry("Reservation time", "Reservation time overlaps with an existing reservation."));
     }
 
+    @Test
+    void rejectsOverlappingReservationForDifferentMemberOnSameBay() {
+        Member requestingMember = Member.builder().id(99L).build();
+        Reservation existing = Reservation.builder()
+                .id(10L)
+                .member(Member.builder().id(100L).build())
+                .startTime(LocalDateTime.of(2026, 8, 12, 10, 0))
+                .endTime(LocalDateTime.of(2026, 8, 12, 11, 0))
+                .build();
+        given(reservationRepository.findByBay_IdAndIsDeletedFalse(BAY_ID))
+                .willReturn(Collections.singletonList(existing));
+        given(reservationRepository.findByMemberIdAndIsDeletedFalse(requestingMember.getId()))
+                .willReturn(Collections.emptyList());
+
+        assertThatThrownBy(() -> reservationService.validateReservationTime(
+                LocalDateTime.of(2026, 8, 12, 10, 30),
+                LocalDateTime.of(2026, 8, 12, 11, 30),
+                daytimeOptime(), BAY_ID, requestingMember))
+                .isInstanceOf(BadRequestError.class)
+                .satisfies(error -> assertThat(((BadRequestError) error).getErrors())
+                        .containsKey("Reservation time"));
+    }
+
+    @Test
+    void allowsDifferentMemberAtExistingReservationEndBoundary() {
+        Member requestingMember = Member.builder().id(99L).build();
+        Reservation existing = Reservation.builder()
+                .id(10L)
+                .member(Member.builder().id(100L).build())
+                .startTime(LocalDateTime.of(2026, 8, 12, 10, 0))
+                .endTime(LocalDateTime.of(2026, 8, 12, 11, 0))
+                .build();
+        given(reservationRepository.findByBay_IdAndIsDeletedFalse(BAY_ID))
+                .willReturn(Collections.singletonList(existing));
+        given(reservationRepository.findByMemberIdAndIsDeletedFalse(requestingMember.getId()))
+                .willReturn(Collections.emptyList());
+
+        reservationService.validateReservationTime(
+                LocalDateTime.of(2026, 8, 12, 11, 0),
+                LocalDateTime.of(2026, 8, 12, 11, 30),
+                daytimeOptime(), BAY_ID, requestingMember);
+    }
+
     private ReservationRequest.ReservationTimeDTO timeRequest(String start, String end) {
         ReservationRequest.ReservationTimeDTO dto = new ReservationRequest.ReservationTimeDTO();
         dto.setStartTime(LocalDateTime.parse(start));
