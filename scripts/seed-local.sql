@@ -13,15 +13,27 @@ USE bdbd;
 
 START TRANSACTION;
 
+-- Remove the optional regional showcase dataset first so this base seed stays rerunnable.
+DELETE FROM review_keyword WHERE id BETWEEN 3001 AND 4000;
+DELETE FROM review WHERE id BETWEEN 2001 AND 3000;
+DELETE FROM reservation WHERE id BETWEEN 500001 AND 510000;
+DELETE FROM carwash_keyword WHERE id BETWEEN 2001 AND 5000;
+DELETE FROM optime WHERE id BETWEEN 2001 AND 5000;
+DELETE FROM bay WHERE id BETWEEN 2001 AND 5000;
+DELETE FROM file WHERE id BETWEEN 2001 AND 5000;
+DELETE FROM carwash WHERE id BETWEEN 1101 AND 2000;
+DELETE FROM location WHERE id BETWEEN 1101 AND 2000;
+
 -- Remove only rows owned by this seed, in FK-safe order.
 DELETE FROM review_keyword WHERE id BETWEEN 1001 AND 1020;
 DELETE FROM review WHERE id BETWEEN 1001 AND 1010;
 DELETE FROM reservation WHERE id BETWEEN 1001 AND 1014;
 DELETE FROM reservation WHERE id BETWEEN 2001 AND 10000;
-DELETE FROM reservation WHERE id IN (10001, 10002) OR id BETWEEN 11001 AND 11025;
+DELETE FROM reservation WHERE id BETWEEN 20001 AND 40000;
+DELETE FROM reservation WHERE id IN (10001, 10002, 10003) OR id BETWEEN 11001 AND 11025;
 DELETE FROM carwash_keyword WHERE id BETWEEN 1001 AND 1015;
 DELETE FROM optime WHERE id BETWEEN 1001 AND 1010;
-DELETE FROM bay WHERE id BETWEEN 1001 AND 1013;
+DELETE FROM bay WHERE id BETWEEN 1001 AND 1014;
 DELETE FROM file WHERE id BETWEEN 1001 AND 1015;
 DELETE FROM carwash WHERE id BETWEEN 1001 AND 1005;
 DELETE FROM location WHERE id BETWEEN 1001 AND 1005;
@@ -274,8 +286,8 @@ BEGIN
                 END;
                 SET v_slot = 0;
                 WHILE v_slot < v_bookings DO
-                    SET v_reservation_id = 2000
-                        + ((v_month - 1) * 700)
+                    SET v_reservation_id = 20000
+                        + ((v_month - 1) * 1000)
                         + ((v_day - 1) * 25)
                         + ((v_carwash - 1001) * 5)
                         + v_slot + 1;
