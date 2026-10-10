@@ -16,6 +16,7 @@ DELETE FROM review_keyword WHERE id BETWEEN 1001 AND 1020;
 DELETE FROM review WHERE id BETWEEN 1001 AND 1010;
 DELETE FROM reservation WHERE id BETWEEN 1001 AND 1014;
 DELETE FROM reservation WHERE id BETWEEN 2001 AND 10000;
+DELETE FROM reservation WHERE id BETWEEN 20001 AND 40000;
 DELETE FROM reservation WHERE id IN (10001, 10002) OR id BETWEEN 11001 AND 11025;
 DELETE FROM carwash_keyword WHERE id BETWEEN 1001 AND 1015;
 DELETE FROM optime WHERE id BETWEEN 1001 AND 1010;
@@ -272,8 +273,8 @@ BEGIN
                 END;
                 SET v_slot = 0;
                 WHILE v_slot < v_bookings DO
-                    SET v_reservation_id = 2000
-                        + ((v_month - 1) * 700)
+                    SET v_reservation_id = 20000
+                        + ((v_month - 1) * 1000)
                         + ((v_day - 1) * 25)
                         + ((v_carwash - 1001) * 5)
                         + v_slot + 1;
