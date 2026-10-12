@@ -25,8 +25,13 @@ public class OwnerResponse {
     public static class SaleResponseDTO {
         private List<CarwashListDTO> carwashList;
         private List<ReservationCarwashDTO> reservationList;
+        private PageMetaDTO page;
 
         public SaleResponseDTO(List<Carwash> carwashList, List<Reservation> reservationList) {
+            this(carwashList, reservationList, 0, reservationList == null ? 20 : Math.max(1, reservationList.size()), reservationList == null ? 0 : reservationList.size());
+        }
+
+        public SaleResponseDTO(List<Carwash> carwashList, List<Reservation> reservationList, int page, int size, long totalElements) {
             if (carwashList != null) {
                 this.carwashList = carwashList.stream()
                         .map(CarwashListDTO::new)
@@ -42,6 +47,22 @@ public class OwnerResponse {
             } else {
                 this.reservationList = Collections.emptyList();
             }
+            this.page = new PageMetaDTO(page, size, totalElements);
+        }
+    }
+
+    @Getter
+    public static class PageMetaDTO {
+        private final int number;
+        private final int size;
+        private final long totalElements;
+        private final int totalPages;
+
+        public PageMetaDTO(int number, int size, long totalElements) {
+            this.number = number;
+            this.size = size;
+            this.totalElements = totalElements;
+            this.totalPages = totalElements == 0 ? 0 : (int) Math.ceil((double) totalElements / size);
         }
     }
 
@@ -310,10 +331,16 @@ public class OwnerResponse {
     public static class ReservationCarwashListDTO {
         private int bayNo;
         private List<ReservationCarwashDTO> reservationList;
+        private PageMetaDTO page;
 
         public ReservationCarwashListDTO(List<Reservation> reservationList, int bayNo) {
+            this(reservationList, bayNo, 0, Math.max(1, reservationList.size()), reservationList.size());
+        }
+
+        public ReservationCarwashListDTO(List<Reservation> reservationList, int bayNo, int page, int size, long totalElements) {
             this.bayNo = bayNo;
             this.reservationList = reservationList.stream().map(ReservationCarwashDTO::new).collect(Collectors.toList());
+            this.page = new PageMetaDTO(page, size, totalElements);
         }
     }
 

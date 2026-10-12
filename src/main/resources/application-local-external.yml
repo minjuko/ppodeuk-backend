@@ -2,11 +2,13 @@ server:
   port: 8080
 
 spring:
+  config:
+    import: optional:file:.env[.properties]
   datasource:
-    url: ${LOCAL_DB_URL:jdbc:mariadb://localhost:3306/bdbd?allowPublicKeyRetrieval=true&useSSL=false}
+    url: ${BDBD_LOCAL_DB_URL:jdbc:mariadb://localhost:3306/bdbd?allowPublicKeyRetrieval=true&useSSL=false}
     driver-class-name: org.mariadb.jdbc.Driver
-    username: ${LOCAL_DB_USERNAME:bdbd}
-    password: ${LOCAL_DB_PASSWORD}
+    username: ${BDBD_LOCAL_DB_USERNAME:bdbd}
+    password: ${BDBD_LOCAL_DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update

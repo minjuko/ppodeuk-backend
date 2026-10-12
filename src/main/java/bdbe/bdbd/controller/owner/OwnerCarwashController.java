@@ -122,6 +122,8 @@ public class OwnerCarwashController {
             @RequestParam(value = "selected-date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate selectedDate,
             @RequestParam(value = "selected-at", required = false)
             @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime selectedAt,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         if (carwashIds == null || carwashIds.isEmpty()) {
@@ -129,7 +131,7 @@ public class OwnerCarwashController {
 
             return ResponseEntity.ok(ApiUtils.success(dto));
         }
-        OwnerResponse.SaleResponseDTO saleResponseDTO = ownerService.findSales(carwashIds, selectedDate, selectedAt, userDetails.getMember());
+        OwnerResponse.SaleResponseDTO saleResponseDTO = ownerService.findSales(carwashIds, selectedDate, selectedAt, normalizePage(page), normalizePageSize(size), userDetails.getMember());
 
         return ResponseEntity.ok(ApiUtils.success(saleResponseDTO));
     }
@@ -161,9 +163,11 @@ public class OwnerCarwashController {
     public ResponseEntity<?> fetchOwnerReservation(
             @PathVariable("bay-id") Long bayId,
             @RequestParam(value = "selected-date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate selectedDate,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        OwnerResponse.ReservationCarwashListDTO dto = ownerService.findBayReservation(bayId, userDetails.getMember(), selectedDate);
+        OwnerResponse.ReservationCarwashListDTO dto = ownerService.findBayReservation(bayId, userDetails.getMember(), selectedDate, normalizePage(page), normalizePageSize(size));
 
         return ResponseEntity.ok(ApiUtils.success(dto));
     }
@@ -177,6 +181,14 @@ public class OwnerCarwashController {
         OwnerResponse.OwnerDashboardDTO dto = ownerService.fetchOwnerHomepage(userDetails.getMember(), selectedDate);
 
         return ResponseEntity.ok(ApiUtils.success(dto));
+    }
+
+    private int normalizePageSize(int size) {
+        return Math.max(1, Math.min(size, 100));
+    }
+
+    private int normalizePage(int page) {
+        return Math.max(0, page);
     }
 }
 

@@ -105,3 +105,6 @@ out/
 
 # Local profile image uploads
 uploads/
+
+# Local-only secrets loaded by the local-external profile
+.env
