@@ -24,6 +24,8 @@ import bdbe.bdbd.repository.optime.OptimeJPARepository;
 import bdbe.bdbd.repository.reservation.ReservationJPARepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,21 +92,28 @@ public class OwnerService {
     }
 
     public OwnerResponse.SaleResponseDTO findSales(List<Long> carwashIds, LocalDate selectedDate, Member sessionMember) {
-        return findSales(carwashIds, selectedDate, null, sessionMember);
+        return findSales(carwashIds, selectedDate, null, 0, 20, sessionMember);
     }
 
     public OwnerResponse.SaleResponseDTO findSales(List<Long> carwashIds, LocalDate selectedDate, LocalDateTime selectedAt, Member sessionMember) {
+        return findSales(carwashIds, selectedDate, selectedAt, 0, 20, sessionMember);
+    }
+
+    public OwnerResponse.SaleResponseDTO findSales(List<Long> carwashIds, LocalDate selectedDate, LocalDateTime selectedAt, int page, int size, Member sessionMember) {
         validateCarwashOwnership(carwashIds, sessionMember);
 
         List<Carwash> carwashList = carwashJPARepository.findCarwashesByMemberId(sessionMember.getId());
 
         LocalDate normalizedDate = LocalDate.of(selectedDate.getYear(), selectedDate.getMonth(), selectedDate.getDayOfMonth());
+        Pageable pageable = PageRequest.of(page, size);
         List<Reservation> reservationList = selectedAt == null
-                ? reservationJPARepository.findAllByCarwash_IdInOrderByStartTimeDesc(carwashIds, normalizedDate)
-                : reservationJPARepository.findAllByCarwash_IdInOrderByStartTimeDescBefore(carwashIds, normalizedDate, selectedAt);
-        if (reservationList.isEmpty()) return new OwnerResponse.SaleResponseDTO(carwashList, new ArrayList<>());
+                ? reservationJPARepository.findAllByCarwash_IdInOrderByStartTimeDesc(carwashIds, normalizedDate, pageable)
+                : reservationJPARepository.findAllByCarwash_IdInOrderByStartTimeDescBefore(carwashIds, normalizedDate, selectedAt, pageable);
+        long totalElements = selectedAt == null
+                ? reservationJPARepository.countSalesByCarwashIdsAndDate(carwashIds, normalizedDate)
+                : reservationJPARepository.countSalesByCarwashIdsAndDateBefore(carwashIds, normalizedDate, selectedAt);
 
-        return new OwnerResponse.SaleResponseDTO(carwashList, reservationList);
+        return new OwnerResponse.SaleResponseDTO(carwashList, reservationList, page, size, totalElements);
     }
 
     public OwnerResponse.SaleResponseDTO findCarwashList(Member sessionMember) {
@@ -114,9 +123,14 @@ public class OwnerService {
     }
 
     public OwnerResponse.ReservationCarwashListDTO findBayReservation(Long bayId, Member sessionMember, LocalDate selectedDate) {
+        return findBayReservation(bayId, sessionMember, selectedDate, 0, 20);
+    }
+
+    public OwnerResponse.ReservationCarwashListDTO findBayReservation(Long bayId, Member sessionMember, LocalDate selectedDate, int page, int size) {
         validateBayOwnership(bayId, sessionMember);
 
-        List<Reservation> reservationList = reservationJPARepository.findByBay_IdWithJoinsAndIsDeletedFalseAndMonthOrderByStartTimeDesc(bayId, selectedDate);
+        List<Reservation> reservationList = reservationJPARepository.findByBay_IdWithJoinsAndIsDeletedFalseAndMonthOrderByStartTimeDesc(bayId, selectedDate, PageRequest.of(page, size));
+        long totalElements = reservationJPARepository.findMonthlyReservationCountByBayIdAndDate(bayId, selectedDate);
         Bay bay = bayJPARepository.findById(bayId)
                 .orElseThrow(() -> {
                     throw new NotFoundError(
@@ -125,7 +139,7 @@ public class OwnerService {
                     );
                 });
 
-        return new OwnerResponse.ReservationCarwashListDTO(reservationList, bay.getBayNum());
+        return new OwnerResponse.ReservationCarwashListDTO(reservationList, bay.getBayNum(), page, size, totalElements);
     }
 
     private void validateCarwashOwnership(List<Long> carwashIds, Member sessionMember) {
