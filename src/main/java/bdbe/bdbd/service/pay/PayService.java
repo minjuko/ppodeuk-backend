@@ -214,7 +214,10 @@ public class PayService implements PaymentFlowService {
 
         requireExternalPaymentEnabled();
 
-        Bay bay = bayJPARepository.findById(bayId)
+        // Serialize approvals for the same bay before calling the external payment API.
+        // This prevents two overlapping requests from both being approved before either
+        // reservation is committed.
+        Bay bay = bayJPARepository.findByIdForUpdate(bayId)
                 .orElseThrow(() -> new NotFoundError(
                         NotFoundError.ErrorCode.RESOURCE_NOT_FOUND,
                         Collections.singletonMap("BayId", "BayId not found")
