@@ -7,7 +7,7 @@
 > Backend의 2023년 구현은 Backend 팀원이 담당했습니다.  
 > 개인의 팀 프로젝트 주요 담당은 [USER Frontend](https://github.com/minjuko/ppodeuk-user-frontend)입니다. Backend에서는 API 요청·응답 명세와 연동 과정에 참여했고, 이후 로컬 재현 환경, 테스트와 CI를 보완했습니다.
 
-## 프로젝트 정보
+## 프로젝트 개요
 
 | 항목 | 내용 |
 | --- | --- |
@@ -17,7 +17,7 @@
 | 개인 담당 | USER Frontend 구현, Backend API 명세·연동 협업 |
 | 수상 | 카카오 테크 캠퍼스 1기 신규 서비스 개발 프로젝트 대상 |
 
-## 주요 기능
+## 주요 기능 및 화면
 
 아래는 Backend 팀 저장소에 구현된 기능입니다.
 
@@ -28,26 +28,6 @@
 - 리뷰 작성·조회와 키워드 관리
 - OWNER 세차장·Bay·예약·매출 관리
 - AWS S3 기반 이미지 업로드
-
-## API 구조
-
-| 경로 | 접근 범위 | 주요 기능 |
-| --- | --- | --- |
-| `/api/open/**` | 비회원 포함 | 회원가입·로그인, 세차장·Bay·리뷰 조회 |
-| `/api/user/**` | USER·OWNER | 예약·결제·리뷰 관리 |
-| `/api/owner/**` | OWNER | 세차장·Bay·예약·매출 관리 |
-
-Frontend 검증은 사용자가 유효한 값을 선택하도록 돕는 역할을 하고, Backend는 영업시간, 예약 중복, 요청 금액과 접근 권한을 다시 검증합니다.
-
-## 개선 작업
-
-- `local`, `demo`, `test`, `prod` 실행 환경 분리
-- 외부 결제를 호출하지 않는 로컬·데모 결제 흐름 구성
-- 자정 경계를 포함한 예약 시간 계산과 중복 검증 보완
-- 회원·세차장·Bay 소유권 검사를 ID 값 기준으로 정리
-- 고정된 외부 주소와 proxy 설정을 환경변수 기반으로 전환
-- H2 기반의 독립적인 통합 테스트 환경과 결정론적 fixture 구성
-- GitHub Actions에서 전체 테스트와 실행 JAR 빌드 자동화
 
 ## 기술 스택
 
@@ -60,21 +40,29 @@ Frontend 검증은 사용자가 유효한 값을 선택하도록 돕는 역할�
 | Test | JUnit 5, Spring Boot Test, MockMvc, H2 |
 | Build·Quality | Gradle, Docker, GitHub Actions |
 
-## 품질 검증
+## 담당 역할 및 핵심 구현
 
-JDK 17과 `test` 프로필에서 외부 DB, AWS, KakaoPay와 Frontend 서버 없이 검증했습니다.
+팀 프로젝트에서는 USER 프론트엔드 및 API 명세 협업을 담당했습니다. 이 저장소의 서버 구현은 백엔드 팀 성과이며, 이후 테스트·CI·로컬 환경과 예약 경계 검증을 보완했습니다.
 
-| 검증 항목 | 결과 |
-| --- | --- |
-| Test Files | 17개 |
-| Tests | 17개 테스트 클래스 · 86개 통과 |
-| Failure / Skip | 0 / 0 |
-| Executable JAR | `bdbd.jar` 빌드 성공 |
-| GitHub Actions | `f5133a4`의 `test`·`build` 실행 성공 |
+- `local`, `demo`, `test`, `prod` 실행 환경 분리
+- 외부 결제를 호출하지 않는 로컬·데모 결제 흐름 구성
+- 자정 경계를 포함한 예약 시간 계산과 중복 검증 보완
+- 회원·세차장·Bay 소유권 검사를 ID 값 기준으로 정리
+- 고정된 외부 주소와 proxy 설정을 환경변수 기반으로 전환
+- H2 기반의 독립적인 통합 테스트 환경과 결정론적 fixture 구성
+- GitHub Actions에서 전체 테스트와 실행 JAR 빌드 자동화
 
-CI는 `main` 브랜치 push와 pull request에서 Gradle Wrapper를 검증하고 `./gradlew clean test build --no-daemon`을 실행하도록 설정되어 있습니다.
+## 트러블슈팅
 
-## 실행 방법
+### 서로 다른 사용자의 동일 세차 베이 예약 중복
+
+- **문제:** 같은 베이·시간대에 다른 사용자의 예약이 존재할 때도 중복 검증이 필요했습니다.
+- **해결:** 예약 중복 검사를 회원별 조회에서 베이 기준 검사로 확장하고, 예약 종료 시각과 다음 예약 시작 시각이 인접한 경우는 허용했습니다.
+- **검증:** 겹침 거부와 인접 예약 허용 회귀 테스트를 추가해 Backend 86건 테스트와 CI에서 확인했습니다.
+
+> 팀 프로젝트 당시 백엔드 구현은 백엔드 팀원이 담당했습니다. 이 항목은 이후 저장소의 검증·개선 작업을 설명합니다.
+
+## 시작하기 (Getting Started)
 
 ### 요구 환경
 
@@ -108,28 +96,21 @@ SPRING_PROFILES_ACTIVE=test ./gradlew clean test build --no-daemon
 
 테스트 프로필은 H2 인메모리 DB와 테스트 전용 fixture를 사용하며 별도 secret이나 외부 환경변수가 필요하지 않습니다.
 
-## 실행 환경 구분
+## 테스트 및 코드 품질
 
-| 프로필 | 용도 | 외부 결제 | 파일 저장 |
-| --- | --- | --- | --- |
-| `local` | 로컬 통합 실행 | 비활성화 | 로컬 저장 |
-| `demo` | 격리된 데모 환경 | 비활성화 | 정적 데모 자원 |
-| `test` | 자동 테스트·CI | 비활성화 | 사용하지 않음 |
-| `prod` | 운영 설정 | 환경변수 필요 | AWS S3 |
+JDK 17과 `test` 프로필에서 외부 DB, AWS, KakaoPay와 Frontend 서버 없이 검증했습니다.
 
-## 관련 저장소
+| 검증 항목 | 결과 |
+| --- | --- |
+| Test Files | 17개 |
+| Tests | 17개 테스트 클래스 · 86개 통과 |
+| Failure / Skip | 0 / 0 |
+| Executable JAR | `bdbd.jar` 빌드 성공 |
+| GitHub Actions | `f5133a4`의 `test`·`build` 실행 성공 |
 
-- [USER Frontend](https://github.com/minjuko/ppodeuk-user-frontend) — 개인 주요 담당, 사용자 예약 흐름
-- [OWNER Frontend](https://github.com/minjuko/ppodeuk-owner-frontend) — 사업자용 관리 화면
+CI는 `main` 브랜치 push와 pull request에서 Gradle Wrapper를 검증하고 `./gradlew clean test build --no-daemon`을 실행하도록 설정되어 있습니다.
 
-## 문서
+## 산출물 및 관련 문서
 
-- [2023년 Backend 팀 README 보존본](./docs/archive/README-2023-original.md)
-
-## 2026년 개인 개선·검증: 예약·결제 서버 경계
-
-2026-09-18 원본 커밋 기준 JDK 17, Gradle Wrapper 8.2.1, Spring Boot 2.7.6에서 테스트 소스 파일 17개, 83건 통과(실패·건너뜀 0), `gradlew.bat build` 성공을 확인했습니다. 2026-10-18 변경 후 17개 테스트 클래스에서 86건 통과(실패·건너뜀 0), `gradlew.bat clean test build --no-daemon`과 `git diff --check` 성공을 확인했습니다. 별도 정적 분석 도구는 실행하지 않았습니다. CI 워크플로는 Wrapper 검증, Java 17 설정, Gradle 캐시 준비 후 `clean test build`를 실행합니다.
-
-프론트엔드는 예약 시간과 예상 금액을 표시하고 요청을 보냅니다. 서버는 영업시간, 30분 단위·최소 이용 시간, 기존 예약과의 시간 겹침을 확인하고 세차장 단가로 금액을 다시 계산합니다. 결제 준비 시 요청 금액과 서버 계산 금액을 비교합니다. 이번 변경으로 회원의 기존 예약뿐 아니라 **같은 베이에 있는 다른 회원의 예약**도 겹침 검증 대상에 포함했습니다. 회귀 테스트는 다른 회원의 같은 베이 시간 겹침을 거부하고, 기존 예약 종료 시각에 시작하는 요청은 허용하는 두 경로를 추가했습니다.
-
-공개 예약 조회는 현재 점유 현황을 보여 주지만 예약 확정은 아닙니다. 예약은 결제 승인 이후 저장됩니다. 로컬·데모 결제는 서버 메모리의 준비 정보에 대해 토큰·회원·베이·시간·만료를 확인하며, 성공 후 재사용을 막습니다. 외부 KakaoPay 승인 경로는 같은 Bay의 승인 요청을 DB 비관적 잠금으로 직렬화한 뒤 중복을 다시 검사하며, 외부 승인 호출보다 잠금 획득이 앞선다는 회귀 테스트를 추가했습니다. 다만 준비 요청과 승인 요청의 결제 식별자·금액을 서버에 영속적으로 묶거나 승인 재시도를 멱등 처리하지 않으며, 외부 승인 성공 후 DB 장애 등으로 예약 저장이 실패할 때의 취소·보상 처리도 없습니다. 운영 결제와 운영 MariaDB를 사용한 동시성 검증은 수행하지 않았습니다.
+- [USER Frontend](https://github.com/minjuko/ppodeuk-user-frontend) · [OWNER Frontend](https://github.com/minjuko/ppodeuk-owner-frontend)
+- [기존 백엔드 문서](docs/archive/README-2023-original.md)
