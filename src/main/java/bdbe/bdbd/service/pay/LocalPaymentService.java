@@ -159,7 +159,7 @@ public class LocalPaymentService implements PaymentFlowService {
         }
         cleanupExpired();
 
-        Bay bay = findBay(bayId);
+        Bay bay = findBayByIdForUpdate(bayId);
         Carwash carwash = findCarwash(bay.getCarwash().getId());
         Reservation reservation = reservationService.save(saveDTO, carwash.getId(), bayId, member);
         ReservationResponse.findLatestOneResponseDTO response =
@@ -191,6 +191,11 @@ public class LocalPaymentService implements PaymentFlowService {
 
     private Bay findBay(Long bayId) {
         return bayRepository.findById(bayId)
+                .orElseThrow(() -> invalid("bayId", "Bay not found."));
+    }
+
+    private Bay findBayByIdForUpdate(Long bayId) {
+        return bayRepository.findByIdForUpdate(bayId)
                 .orElseThrow(() -> invalid("bayId", "Bay not found."));
     }
 

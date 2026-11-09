@@ -34,6 +34,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 
 class LocalPaymentServiceTest {
@@ -70,6 +71,7 @@ class LocalPaymentServiceTest {
         Carwash carwash = Carwash.builder().id(CARWASH_ID).name("Portfolio Day Carwash").build();
         Bay bay = Bay.builder().id(BAY_ID).bayNum(1).carwash(carwash).status(1).build();
         given(bayRepository.findById(BAY_ID)).willReturn(Optional.of(bay));
+        given(bayRepository.findByIdForUpdate(BAY_ID)).willReturn(Optional.of(bay));
         given(carwashRepository.findById(CARWASH_ID)).willReturn(Optional.of(carwash));
         given(reservationService.findPayAmount(any(), eq(BAY_ID), eq(member)))
                 .willReturn(new ReservationResponse.PayAmountDTO(START, END, 12000));
@@ -158,6 +160,9 @@ class LocalPaymentServiceTest {
         ResponseEntity<?> response = approve(ready.tid, ready.pgToken, member, BAY_ID, START, END);
 
         assertThat(response.getBody()).isSameAs(approvalResponse);
+        org.mockito.InOrder order = inOrder(bayRepository, reservationService);
+        order.verify(bayRepository).findByIdForUpdate(BAY_ID);
+        order.verify(reservationService).save(any(), eq(CARWASH_ID), eq(BAY_ID), eq(member));
         verify(reservationService).save(any(), eq(CARWASH_ID), eq(BAY_ID), eq(member));
         assertThatThrownBy(() -> approve(ready.tid, ready.pgToken, member, BAY_ID, START, END))
                 .isInstanceOf(BadRequestError.class);

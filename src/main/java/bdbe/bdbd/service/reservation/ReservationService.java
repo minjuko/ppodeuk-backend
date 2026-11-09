@@ -47,12 +47,12 @@ public class ReservationService {
 
     @Transactional
     public Reservation save(ReservationRequest.SaveDTO dto, Long carwashId, Long bayId, Member sessionMember) {
+        Bay bay = findBayByIdForUpdate(bayId);
         Carwash carwash = findCarwashById(carwashId);
         Optime optime = findOptime(carwash, dto.getStartTime());
 
         validateReservationTime(dto.getStartTime(), dto.getEndTime(), optime, bayId, sessionMember);
 
-        Bay bay = findBayById(bayId);
         Reservation reservation = dto.toReservationEntity(carwash, bay, sessionMember);
         reservationJPARepository.save(reservation);
 
@@ -227,6 +227,14 @@ public class ReservationService {
 
     private Bay findBayById(Long id) {
         return bayJPARepository.findById(id)
+                .orElseThrow(() -> new NotFoundError(
+                        NotFoundError.ErrorCode.RESOURCE_NOT_FOUND,
+                        Collections.singletonMap("BayId", "Bay not found")
+                ));
+    }
+
+    private Bay findBayByIdForUpdate(Long id) {
+        return bayJPARepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new NotFoundError(
                         NotFoundError.ErrorCode.RESOURCE_NOT_FOUND,
                         Collections.singletonMap("BayId", "Bay not found")
