@@ -111,6 +111,10 @@ JDK 17과 `test` 프로필에서 외부 DB, AWS, KakaoPay와 Frontend 서버 없
 
 CI는 `main` 브랜치 push와 pull request에서 Gradle Wrapper를 검증하고 `./gradlew clean test build --no-daemon`을 실행하도록 설정되어 있습니다.
 
+## 공개 Git 이력의 자격증명 안내
+
+과거 공개 Git 이력의 빌드 산출물에서 AWS Access Key ID와 Secret Access Key 형식 값이 함께 확인됐습니다. 사용자 확인에 따르면 프로젝트에서 사용한 AWS 키는 폐기·만료됐고 API 키도 교체됐습니다. 감사에서 발견한 값과 폐기·교체한 키의 일치 여부는 검증하지 않아 **개별 키 상태는 미확인**입니다. 같은 과거 빌드 산출물의 데이터베이스 접속 정보도 실제 사용 여부를 확인하지 않았습니다.
+
 ## 산출물 및 관련 문서
 
 - [USER Frontend](https://github.com/minjuko/ppodeuk-user-frontend) · [OWNER Frontend](https://github.com/minjuko/ppodeuk-owner-frontend)
