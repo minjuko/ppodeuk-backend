@@ -43,8 +43,8 @@ jobs:
         env:
           MARIADB_DATABASE: ppodeuk_mariadb_it
           MARIADB_USER: bdbd_ci
-          MARIADB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-          MARIADB_ROOT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          MARIADB_PASSWORD: ${{ secrets.PP01_MARIADB_PASSWORD }}
+          MARIADB_ROOT_PASSWORD: ${{ secrets.PP01_MARIADB_ROOT_PASSWORD }}
         ports:
           - 3306/tcp
         options: >-
@@ -65,12 +65,28 @@ jobs:
       - name: Set up Gradle dependency cache
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Validate MariaDB CI credentials
+        env:
+          BDBD_MARIADB_IT_PASSWORD: ${{ secrets.PP01_MARIADB_PASSWORD }}
+          BDBD_MARIADB_IT_ROOT_PASSWORD: ${{ secrets.PP01_MARIADB_ROOT_PASSWORD }}
+        run: |
+          if [[ -z "${BDBD_MARIADB_IT_PASSWORD}" || -z "${BDBD_MARIADB_IT_ROOT_PASSWORD}" ]]; then
+            echo "::error::Required MariaDB CI repository secrets are missing."
+            exit 1
+          fi
+          if [[ "${BDBD_MARIADB_IT_PASSWORD}" == "${BDBD_MARIADB_IT_ROOT_PASSWORD}" ]]; then
+            echo "::error::MariaDB CI user and root passwords must be distinct."
+            exit 1
+          fi
+
       - name: Mask temporary MariaDB credentials and URL
         env:
-          BDBD_MARIADB_IT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          BDBD_MARIADB_IT_PASSWORD: ${{ secrets.PP01_MARIADB_PASSWORD }}
+          BDBD_MARIADB_IT_ROOT_PASSWORD: ${{ secrets.PP01_MARIADB_ROOT_PASSWORD }}
           MARIADB_HOST_PORT: ${{ job.services.mariadb.ports[3306] }}
         run: |
           echo "::add-mask::${BDBD_MARIADB_IT_PASSWORD}"
+          echo "::add-mask::${BDBD_MARIADB_IT_ROOT_PASSWORD}"
           echo "::add-mask::jdbc:mariadb://127.0.0.1:${MARIADB_HOST_PORT}/ppodeuk_mariadb_it"
 
       - name: Record resolved MariaDB JDBC driver
@@ -81,7 +97,7 @@ jobs:
           BDBD_MARIADB_IT_ENABLED: 'true'
           BDBD_MARIADB_IT_URL: jdbc:mariadb://127.0.0.1:${{ job.services.mariadb.ports[3306] }}/ppodeuk_mariadb_it
           BDBD_MARIADB_IT_USERNAME: bdbd_ci
-          BDBD_MARIADB_IT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          BDBD_MARIADB_IT_PASSWORD: ${{ secrets.PP01_MARIADB_PASSWORD }}
           SPRING_PROFILES_ACTIVE: mariadb-it
         run: |
           ./gradlew test --tests bdbe.bdbd.reservation.ReservationConcurrencyMariaDbTest --no-daemon --rerun-tasks

@@ -93,7 +93,7 @@ SPRING_PROFILES_ACTIVE: test
 ./gradlew clean test build --no-daemon
 ```
 
-별도 `mariadb-concurrency` job은 GitHub-hosted `ubuntu-latest`에서 `mariadb:11.4.12` 서비스를 실행한다. 컨테이너의 3306 포트는 host 임의 포트로 매핑하고, 실제 포트는 `${{ job.services.mariadb.ports[3306] }}`에서 읽는다. 따라서 테스트 URL은 `127.0.0.1`의 비기본 포트를 사용한다. 스키마는 `ppodeuk_mariadb_it`, 사용자는 `bdbd_ci`로 제한했다. 비밀번호에는 해당 job 범위의 임시 `secrets.GITHUB_TOKEN`을 사용하며, 테스트 step 전에 비밀번호와 JDBC URL을 로그 마스킹한다. 원격 로그 검토에서 첫 실행 때 환경 변수 출력에 테스트 자격 증명과 URL이 나타난 것을 확인해, 현재 workflow는 step 진입 전에 두 값을 마스킹하도록 보완했다. 실제 운영 자격증명, 운영 DB, 실제 결제 API는 사용하지 않는다.
+별도 `mariadb-concurrency` job은 GitHub-hosted `ubuntu-latest`에서 `mariadb:11.4.12` 서비스를 실행한다. 컨테이너의 3306 포트는 host 임의 포트로 매핑하고, 실제 포트는 `${{ job.services.mariadb.ports[3306] }}`에서 읽는다. 따라서 테스트 URL은 `127.0.0.1`의 비기본 포트를 사용한다. 스키마는 `ppodeuk_mariadb_it`, 사용자는 `bdbd_ci`로 제한했다. DB 사용자 비밀번호는 repository secret `PP01_MARIADB_PASSWORD`, root 비밀번호는 별도 secret `PP01_MARIADB_ROOT_PASSWORD`를 사용한다. 사용자 비밀번호는 서비스 컨테이너와 테스트 step에서 동일하게 전달한다. 두 secret이 비어 있거나 실제 값이 서로 같으면 MariaDB 테스트 전에 job이 실패한다. GitHub Actions가 컨테이너 초기화 로그의 secret 값을 자동 마스킹하며, 테스트 step 전에 두 비밀번호와 JDBC URL도 `add-mask`로 등록한다. Fork에서 시작된 외부 PR에는 repository secrets가 제공되지 않으므로 MariaDB job은 통과하지 않고 실패한다. 실제 운영 자격증명, 운영 DB, 실제 결제 API는 사용하지 않는다.
 
 서비스 health check는 MariaDB의 `healthcheck.sh --connect --innodb_initialized`를 이용한다. readiness가 충족되지 않으면 job은 테스트 전에 실패한다. Java 17과 저장소의 Gradle wrapper를 사용한다. 먼저 `dependencyInsight`로 테스트 runtime classpath의 MariaDB JDBC driver 버전을 로그에 남기고, 이후 다음 클래스만 명시 실행한다.
 
@@ -121,6 +121,7 @@ bdbe.bdbd.reservation.ReservationConcurrencyMariaDbTest
 ### 원격 GitHub Actions 검증
 
 PR [#1](https://github.com/minjuko/ppodeuk-backend/pull/1)의 최초 Actions 실행 [#44442758166](https://github.com/minjuko/ppodeuk-backend/actions/runs/44442758166)에서는 두 job이 성공했고 MariaDB JUnit XML은 10회 실행, skip/failure/error 0이었다. 다만 로그 검토에서 test step의 환경 변수 출력에 테스트용 비밀번호와 JDBC URL이 노출된 점을 발견했다. credentials를 `secrets.GITHUB_TOKEN`으로 바꾸고 테스트 step 전에 비밀번호와 JDBC URL을 마스킹하도록 수정했다. 보완 후 실행 [#44443888009](https://github.com/minjuko/ppodeuk-backend/actions/runs/44443888009)에서도 `test-and-build`와 `mariadb-concurrency` 두 job이 성공했다. MariaDB JUnit XML은 `tests=10, skipped=0, failures=0, errors=0`이었고, 로그에서 두 값은 모두 `***`로 마스킹되어 원문이 나타나지 않는 것을 확인했다.
+후속 보안 변경에서는 DB 인증에 GitHub API 권한이 포함된 `GITHUB_TOKEN`을 재사용하지 않고 위 두 전용 repository secret으로 분리했다. 최신 실행 결과와 초기화 로그의 마스킹 여부는 해당 보안 변경을 Push한 뒤 확인해 이 문서에 기록한다.
 
 - `test-and-build`: 기존 H2 테스트 및 Gradle build.
 - `mariadb-concurrency`: 서비스 readiness, MariaDB 전용 테스트 실행, JUnit XML의 `tests > 0`, `skipped = 0`, `failures = 0`, `errors = 0`.
