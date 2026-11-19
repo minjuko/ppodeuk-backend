@@ -120,12 +120,12 @@ bdbe.bdbd.reservation.ReservationConcurrencyMariaDbTest
 
 ### 원격 GitHub Actions 검증
 
-PR [#1](https://github.com/minjuko/ppodeuk-backend/pull/1)의 최초 Actions 실행 [#44442758166](https://github.com/minjuko/ppodeuk-backend/actions/runs/44442758166)에서 `test-and-build`와 `mariadb-concurrency` 두 job은 성공했다. MariaDB JUnit XML은 10회 실행, skip/failure/error 0이었다. 다만 로그 검토에서 test step의 환경 변수 출력에 테스트용 비밀번호와 JDBC URL이 노출된 점을 발견했다. 이를 방지하기 위해 credentials를 `secrets.GITHUB_TOKEN`으로 바꾸고 테스트 step 앞에서 비밀번호와 JDBC URL을 마스킹하도록 수정했다. 이 보완 변경의 재실행 결과는 아래에 별도로 기록한다.
+PR [#1](https://github.com/minjuko/ppodeuk-backend/pull/1)의 최초 Actions 실행 [#44442758166](https://github.com/minjuko/ppodeuk-backend/actions/runs/44442758166)에서는 두 job이 성공했고 MariaDB JUnit XML은 10회 실행, skip/failure/error 0이었다. 다만 로그 검토에서 test step의 환경 변수 출력에 테스트용 비밀번호와 JDBC URL이 노출된 점을 발견했다. credentials를 `secrets.GITHUB_TOKEN`으로 바꾸고 테스트 step 전에 비밀번호와 JDBC URL을 마스킹하도록 수정했다. 보완 후 실행 [#44443888009](https://github.com/minjuko/ppodeuk-backend/actions/runs/44443888009)에서도 `test-and-build`와 `mariadb-concurrency` 두 job이 성공했다. MariaDB JUnit XML은 `tests=10, skipped=0, failures=0, errors=0`이었고, 로그에서 두 값은 모두 `***`로 마스킹되어 원문이 나타나지 않는 것을 확인했다.
 
 - `test-and-build`: 기존 H2 테스트 및 Gradle build.
 - `mariadb-concurrency`: 서비스 readiness, MariaDB 전용 테스트 실행, JUnit XML의 `tests > 0`, `skipped = 0`, `failures = 0`, `errors = 0`.
 
-로컬 통과는 원격 Actions 통과를 대신하지 않는다. 자격 증명 로그 마스킹 보완 후 PR 실행을 다시 확인한다. 자동 merge하지 않는다.
+로컬 통과는 원격 Actions 통과를 대신하지 않는다. workflow 변경을 push할 때마다 PR의 두 job 및 자격 증명 로그 마스킹을 확인한다. 자동 merge하지 않는다.
 
 ## 검증 한계 및 위험
 
