@@ -33,3 +33,98 @@ jobs:
 
       - name: Test and build
         run: ./gradlew clean test build --no-daemon
+
+  mariadb-concurrency:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mariadb:
+        image: mariadb:11.4.12
+        env:
+          MARIADB_DATABASE: ppodeuk_mariadb_it
+          MARIADB_USER: bdbd_ci
+          MARIADB_PASSWORD: ${{ secrets.PP01_MARIADB_PASSWORD }}
+          MARIADB_ROOT_PASSWORD: ${{ secrets.PP01_MARIADB_ROOT_PASSWORD }}
+        ports:
+          - 3306/tcp
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle dependency cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Validate MariaDB CI credentials
+        env:
+          BDBD_MARIADB_IT_PASSWORD: ${{ secrets.PP01_MARIADB_PASSWORD }}
+          BDBD_MARIADB_IT_ROOT_PASSWORD: ${{ secrets.PP01_MARIADB_ROOT_PASSWORD }}
+        run: |
+          if [[ -z "${BDBD_MARIADB_IT_PASSWORD}" || -z "${BDBD_MARIADB_IT_ROOT_PASSWORD}" ]]; then
+            echo "::error::Required MariaDB CI repository secrets are missing."
+            exit 1
+          fi
+          if [[ "${BDBD_MARIADB_IT_PASSWORD}" == "${BDBD_MARIADB_IT_ROOT_PASSWORD}" ]]; then
+            echo "::error::MariaDB CI user and root passwords must be distinct."
+            exit 1
+          fi
+
+      - name: Mask temporary MariaDB credentials and URL
+        env:
+          BDBD_MARIADB_IT_PASSWORD: ${{ secrets.PP01_MARIADB_PASSWORD }}
+          BDBD_MARIADB_IT_ROOT_PASSWORD: ${{ secrets.PP01_MARIADB_ROOT_PASSWORD }}
+          MARIADB_HOST_PORT: ${{ job.services.mariadb.ports[3306] }}
+        run: |
+          echo "::add-mask::${BDBD_MARIADB_IT_PASSWORD}"
+          echo "::add-mask::${BDBD_MARIADB_IT_ROOT_PASSWORD}"
+          echo "::add-mask::jdbc:mariadb://127.0.0.1:${MARIADB_HOST_PORT}/ppodeuk_mariadb_it"
+
+      - name: Record resolved MariaDB JDBC driver
+        run: ./gradlew dependencyInsight --dependency mariadb-java-client --configuration testRuntimeClasspath --no-daemon
+
+      - name: Run MariaDB concurrency integration tests
+        env:
+          BDBD_MARIADB_IT_ENABLED: 'true'
+          BDBD_MARIADB_IT_URL: jdbc:mariadb://127.0.0.1:${{ job.services.mariadb.ports[3306] }}/ppodeuk_mariadb_it
+          BDBD_MARIADB_IT_USERNAME: bdbd_ci
+          BDBD_MARIADB_IT_PASSWORD: ${{ secrets.PP01_MARIADB_PASSWORD }}
+          SPRING_PROFILES_ACTIVE: mariadb-it
+        run: |
+          ./gradlew test --tests bdbe.bdbd.reservation.ReservationConcurrencyMariaDbTest --no-daemon --rerun-tasks
+
+      - name: Verify MariaDB test execution report
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree
+
+          reports = Path("build/test-results/test")
+          matches = []
+          if reports.exists():
+              for report in reports.glob("TEST-*.xml"):
+                  root = ElementTree.parse(report).getroot()
+                  if root.attrib.get("name") == "bdbe.bdbd.reservation.ReservationConcurrencyMariaDbTest":
+                      matches.append((report, root))
+
+          if not matches:
+              raise SystemExit("MariaDB concurrency JUnit XML report was not produced.")
+
+          tests = sum(int(root.attrib.get("tests", 0)) for _, root in matches)
+          skipped = sum(int(root.attrib.get("skipped", 0)) for _, root in matches)
+          failures = sum(int(root.attrib.get("failures", 0)) for _, root in matches)
+          errors = sum(int(root.attrib.get("errors", 0)) for _, root in matches)
+          print(f"MariaDB concurrency integration tests: tests={tests}, skipped={skipped}, failures={failures}, errors={errors}")
+          if tests < 10 or skipped != 0 or failures != 0 or errors != 0:
+              raise SystemExit("Expected at least the current 10 MariaDB test invocations and zero skips, failures, or errors.")
+          PY
