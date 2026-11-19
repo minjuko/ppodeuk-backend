@@ -43,8 +43,8 @@ jobs:
         env:
           MARIADB_DATABASE: ppodeuk_mariadb_it
           MARIADB_USER: bdbd_ci
-          MARIADB_PASSWORD: ci-${{ github.run_id }}-${{ github.run_attempt }}
-          MARIADB_ROOT_PASSWORD: ci-root-${{ github.run_id }}-${{ github.run_attempt }}
+          MARIADB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          MARIADB_ROOT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         ports:
           - 3306/tcp
         options: >-
@@ -65,6 +65,14 @@ jobs:
       - name: Set up Gradle dependency cache
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Mask temporary MariaDB credentials and URL
+        env:
+          BDBD_MARIADB_IT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          MARIADB_HOST_PORT: ${{ job.services.mariadb.ports[3306] }}
+        run: |
+          echo "::add-mask::${BDBD_MARIADB_IT_PASSWORD}"
+          echo "::add-mask::jdbc:mariadb://127.0.0.1:${MARIADB_HOST_PORT}/ppodeuk_mariadb_it"
+
       - name: Record resolved MariaDB JDBC driver
         run: ./gradlew dependencyInsight --dependency mariadb-java-client --configuration testRuntimeClasspath --no-daemon
 
@@ -73,10 +81,9 @@ jobs:
           BDBD_MARIADB_IT_ENABLED: 'true'
           BDBD_MARIADB_IT_URL: jdbc:mariadb://127.0.0.1:${{ job.services.mariadb.ports[3306] }}/ppodeuk_mariadb_it
           BDBD_MARIADB_IT_USERNAME: bdbd_ci
-          BDBD_MARIADB_IT_PASSWORD: ci-${{ github.run_id }}-${{ github.run_attempt }}
+          BDBD_MARIADB_IT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           SPRING_PROFILES_ACTIVE: mariadb-it
         run: |
-          echo "::add-mask::${BDBD_MARIADB_IT_PASSWORD}"
           ./gradlew test --tests bdbe.bdbd.reservation.ReservationConcurrencyMariaDbTest --no-daemon --rerun-tasks
 
       - name: Verify MariaDB test execution report

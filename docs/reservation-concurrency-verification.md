@@ -6,7 +6,7 @@
 
 후속 수정에서는 `ReservationService.save`가 운영 시간과 기존 예약을 조회하기 전에 기존 `PESSIMISTIC_WRITE` Bay 잠금을 잡도록 했다. 두 결제 승인 경로도 보통의 Bay/Carwash 조회보다 먼저 잠금을 잡는다. `save`는 같은 트랜잭션 안에서 해당 행을 다시 잠그고 예약 가능 시간을 재검사한 뒤 저장한다.
 
-2026-11-19에는 PP-01 작업으로 `.github/workflows/ci.yml`에 MariaDB 전용 job을 추가했다. 기본 H2 `test-and-build`는 유지했다. 로컬 기본 suite/build와 별도 격리 MariaDB suite는 실행해 결과를 확인했다. **GitHub Actions 원격 실행은 PR에서 확인하기 전에는 검증 완료로 보지 않는다.**
+2026-11-19에는 PP-01 작업으로 `.github/workflows/ci.yml`에 MariaDB 전용 job을 추가했다. 기본 H2 `test-and-build`는 유지했다. 로컬 기본 suite/build와 별도 격리 MariaDB suite를 실행했다. PR 원격 Actions도 별도로 실행해 두 job 결과와 로그를 확인했다.
 
 ## 요청 흐름과 트랜잭션 경계
 
@@ -93,7 +93,7 @@ SPRING_PROFILES_ACTIVE: test
 ./gradlew clean test build --no-daemon
 ```
 
-별도 `mariadb-concurrency` job은 GitHub-hosted `ubuntu-latest`에서 `mariadb:11.4.12` 서비스를 실행한다. 컨테이너의 3306 포트는 host 임의 포트로 매핑하고, 실제 포트는 `${{ job.services.mariadb.ports[3306] }}`에서 읽는다. 따라서 테스트 URL은 `127.0.0.1`의 비기본 포트를 사용한다. 스키마는 `ppodeuk_mariadb_it`, 사용자는 `bdbd_ci`로 제한했다. 비밀번호는 `github.run_id`와 `github.run_attempt`를 이용해 실행마다 다르게 만들고 job scope에만 전달하며 로그 마스킹을 설정했다. 실제 운영 자격증명, 운영 DB, 실제 결제 API는 사용하지 않는다.
+별도 `mariadb-concurrency` job은 GitHub-hosted `ubuntu-latest`에서 `mariadb:11.4.12` 서비스를 실행한다. 컨테이너의 3306 포트는 host 임의 포트로 매핑하고, 실제 포트는 `${{ job.services.mariadb.ports[3306] }}`에서 읽는다. 따라서 테스트 URL은 `127.0.0.1`의 비기본 포트를 사용한다. 스키마는 `ppodeuk_mariadb_it`, 사용자는 `bdbd_ci`로 제한했다. 비밀번호에는 해당 job 범위의 임시 `secrets.GITHUB_TOKEN`을 사용하며, 테스트 step 전에 비밀번호와 JDBC URL을 로그 마스킹한다. 원격 로그 검토에서 첫 실행 때 환경 변수 출력에 테스트 자격 증명과 URL이 나타난 것을 확인해, 현재 workflow는 step 진입 전에 두 값을 마스킹하도록 보완했다. 실제 운영 자격증명, 운영 DB, 실제 결제 API는 사용하지 않는다.
 
 서비스 health check는 MariaDB의 `healthcheck.sh --connect --innodb_initialized`를 이용한다. readiness가 충족되지 않으면 job은 테스트 전에 실패한다. Java 17과 저장소의 Gradle wrapper를 사용한다. 먼저 `dependencyInsight`로 테스트 runtime classpath의 MariaDB JDBC driver 버전을 로그에 남기고, 이후 다음 클래스만 명시 실행한다.
 
@@ -112,6 +112,7 @@ bdbe.bdbd.reservation.ReservationConcurrencyMariaDbTest
 | 기본 H2 suite 및 build (PR 준비 재검증) | Java 17, Gradle 8.2.1. `./gradlew.bat test build --no-daemon --rerun-tasks` | 성공. JUnit XML 18 suites, 총 92회: 86 pass, 6 skip, failure/error 0. 6 skip은 opt-in MariaDB 테스트이며 flag가 없는 기본 H2 실행에서 예상된 결과다. 기존 build 산출물을 보존하려고 로컬에서는 `clean`을 실행하지 않았다. |
 | MariaDB 통합 suite (최초 PP-01 확인) | 폐기 가능한 로컬 MariaDB 11.4.12, InnoDB, `REPEATABLE-READ`, loopback 임의 포트 63123, 별도 임시 data directory/schema/test 계정. Java 17, Gradle 8.2.1, MariaDB JDBC driver 3.0.9 | `./gradlew.bat test --tests bdbe.bdbd.reservation.ReservationConcurrencyMariaDbTest --no-daemon --rerun-tasks` 성공. JUnit XML 10회 실행, skip/failure/error 0. |
 | MariaDB 통합 suite (PR 준비 재검증) | 폐기 가능한 로컬 MariaDB 11.4.12, InnoDB, `REPEATABLE-READ`, loopback 임의 포트 52681, 별도 임시 data directory/schema/test 계정. Java 17, Gradle 8.2.1, MariaDB JDBC driver 3.0.9 | `./gradlew.bat test --tests bdbe.bdbd.reservation.ReservationConcurrencyMariaDbTest --no-daemon --rerun-tasks` 성공. JUnit XML 10회 실행, skip/failure/error 0. |
+| MariaDB 통합 suite (로그 마스킹 보완 후 재검증) | 새 폐기 가능 로컬 MariaDB 11.4.12, InnoDB, `REPEATABLE-READ`, loopback 임의 포트 52682, 별도 임시 data directory/schema/test 계정. Java 17, Gradle 8.2.1, MariaDB JDBC driver 3.0.9 | `./gradlew.bat test --tests bdbe.bdbd.reservation.ReservationConcurrencyMariaDbTest --no-daemon --rerun-tasks` 성공. JUnit XML 10회 실행, skip/failure/error 0. |
 | workflow YAML 구문 | `js-yaml`로 `.github/workflows/ci.yml` 파싱 | 성공. job 2개와 MariaDB 이미지 `mariadb:11.4.12` 확인. |
 | 공백 검사 | `git diff --check` | 통과. |
 
@@ -119,12 +120,12 @@ bdbe.bdbd.reservation.ReservationConcurrencyMariaDbTest
 
 ### 원격 GitHub Actions 검증
 
-2026-11-19 현재 변경의 PR과 원격 Actions 실행 URL은 아직 없다. workflow는 `main` push 또는 `main` 대상 pull request에서 실행되므로, 다음 두 job 결과를 확인한 뒤에만 원격 CI 통과로 기록한다.
+PR [#1](https://github.com/minjuko/ppodeuk-backend/pull/1)의 최초 Actions 실행 [#44442758166](https://github.com/minjuko/ppodeuk-backend/actions/runs/44442758166)에서 `test-and-build`와 `mariadb-concurrency` 두 job은 성공했다. MariaDB JUnit XML은 10회 실행, skip/failure/error 0이었다. 다만 로그 검토에서 test step의 환경 변수 출력에 테스트용 비밀번호와 JDBC URL이 노출된 점을 발견했다. 이를 방지하기 위해 credentials를 `secrets.GITHUB_TOKEN`으로 바꾸고 테스트 step 앞에서 비밀번호와 JDBC URL을 마스킹하도록 수정했다. 이 보완 변경의 재실행 결과는 아래에 별도로 기록한다.
 
 - `test-and-build`: 기존 H2 테스트 및 Gradle build.
 - `mariadb-concurrency`: 서비스 readiness, MariaDB 전용 테스트 실행, JUnit XML의 `tests > 0`, `skipped = 0`, `failures = 0`, `errors = 0`.
 
-로컬 통과는 원격 Actions 통과를 대신하지 않는다. PR 실행이 실패하면 실패 로그를 확인하고 workflow 검사 설정만 최소 보완한 뒤 해당 변경을 다시 검증한다. 자동 merge하지 않는다.
+로컬 통과는 원격 Actions 통과를 대신하지 않는다. 자격 증명 로그 마스킹 보완 후 PR 실행을 다시 확인한다. 자동 merge하지 않는다.
 
 ## 검증 한계 및 위험
 
