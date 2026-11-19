@@ -121,7 +121,7 @@ bdbe.bdbd.reservation.ReservationConcurrencyMariaDbTest
 ### 원격 GitHub Actions 검증
 
 PR [#1](https://github.com/minjuko/ppodeuk-backend/pull/1)의 최초 Actions 실행 [#44442758166](https://github.com/minjuko/ppodeuk-backend/actions/runs/44442758166)에서는 두 job이 성공했고 MariaDB JUnit XML은 10회 실행, skip/failure/error 0이었다. 다만 로그 검토에서 test step의 환경 변수 출력에 테스트용 비밀번호와 JDBC URL이 노출된 점을 발견했다. credentials를 `secrets.GITHUB_TOKEN`으로 바꾸고 테스트 step 전에 비밀번호와 JDBC URL을 마스킹하도록 수정했다. 보완 후 실행 [#44443888009](https://github.com/minjuko/ppodeuk-backend/actions/runs/44443888009)에서도 `test-and-build`와 `mariadb-concurrency` 두 job이 성공했다. MariaDB JUnit XML은 `tests=10, skipped=0, failures=0, errors=0`이었고, 로그에서 두 값은 모두 `***`로 마스킹되어 원문이 나타나지 않는 것을 확인했다.
-후속 보안 변경에서는 DB 인증에 GitHub API 권한이 포함된 `GITHUB_TOKEN`을 재사용하지 않고 위 두 전용 repository secret으로 분리했다. 최신 실행 결과와 초기화 로그의 마스킹 여부는 해당 보안 변경을 Push한 뒤 확인해 이 문서에 기록한다.
+후속 보안 변경에서는 DB 인증에 GitHub API 권한이 포함된 `GITHUB_TOKEN`을 재사용하지 않고 위 두 전용 repository secret으로 분리했다. PR 보안 변경 실행 [#44446746576](https://github.com/minjuko/ppodeuk-backend/actions/runs/44446746576)에서 두 job이 성공했고, MariaDB XML은 `tests=10, skipped=0, failures=0, errors=0`이었다. Docker 초기화 로그의 두 비밀번호와 테스트 로그의 JDBC URL은 모두 `***`로 마스킹되어 원문이 출력되지 않았다.
 
 - `test-and-build`: 기존 H2 테스트 및 Gradle build.
 - `mariadb-concurrency`: 서비스 readiness, MariaDB 전용 테스트 실행, JUnit XML의 `tests > 0`, `skipped = 0`, `failures = 0`, `errors = 0`.
