@@ -1,0 +1,28 @@
+{
+  "name": "ppodeuk-node-express-practice",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A small Node.js, Express, and TypeScript reservation practice server",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "build": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.15.30",
+    "@typescript-eslint/parser": "^8.35.1",
+    "eslint": "^9.29.0",
+    "typescript": "~5.8.3",
+    "vitest": "^3.2.4",
+    "tsx": "^4.20.3",
+    "supertest": "^7.1.1",
+    "@types/supertest": "^6.0.3"
+  }
+}
