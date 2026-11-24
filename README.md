@@ -103,13 +103,11 @@ JDK 17과 `test` 프로필에서 외부 DB, AWS, KakaoPay와 Frontend 서버 없
 
 | 검증 항목 | 결과 |
 | --- | --- |
-| Test Files | 17개 |
-| Tests | 17개 테스트 클래스 · 86개 통과 |
-| Failure / Skip | 0 / 0 |
-| Executable JAR | `bdbd.jar` 빌드 성공 |
-| GitHub Actions | `f5133a4`의 `test`·`build` 실행 성공 |
+| 기본 H2 테스트·빌드 (`test-and-build`) | `main` push·PR에서 Java 17, `test` 프로필로 `./gradlew clean test build --no-daemon` 실행. 확인된 기본 검증은 **86개 통과·MariaDB 전용 6개 건너뜀**, 실패·오류 0건, 실행 JAR 빌드 성공 |
+| MariaDB 동시성 통합 테스트 (`mariadb-concurrency`) | 별도 MariaDB **11.4.12** 서비스와 `mariadb-it` 프로필에서 실행. CI는 JUnit XML 기준 **10회 이상 실행**, 건너뜀·실패·오류 **각 0건**을 요구하며, 확인된 실행은 **10회 모두 통과** |
+| GitHub Actions | [두 작업 성공 실행](https://github.com/minjuko/ppodeuk-backend/actions/runs/44446746576) · [동시성 검증 조건·한계](docs/reservation-concurrency-verification.md) |
 
-CI는 `main` 브랜치 push와 pull request에서 Gradle Wrapper를 검증하고 `./gradlew clean test build --no-daemon`을 실행하도록 설정되어 있습니다.
+기본 H2 테스트와 MariaDB 테스트는 서로 다른 CI 작업입니다. MariaDB 테스트는 격리 DB와 모의 결제 응답으로 예약 저장 경합을 검증한 결과이며, 실제 KakaoPay 승인·취소, 운영 DB·운영 부하, 다중 프로세스 및 예약 수정 경합을 검증한 결과는 아닙니다.
 
 ## 공개 Git 이력의 자격증명 안내
 
